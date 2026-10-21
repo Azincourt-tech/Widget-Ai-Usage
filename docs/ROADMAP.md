@@ -1,10 +1,10 @@
 # Roadmap
 
-Só o que ainda está pendente. O que já está pronto fica descrito no [README](../README.md) e no [CLAUDE.md](../CLAUDE.md).
+Só o que ainda está pendente. O que já está pronto fica descrito no [README](../README.md) (para quem usa) e no [guia técnico](DESENVOLVIMENTO.md).
 
 ## Windows
 
-- **Empacotamento:** `.exe` único, compilado pelo GitHub Actions com o secret do Antigravity guardado nos secrets do repositório (variável `AntigravityClientSecret`).
+- **Assinatura digital do `.exe`:** evitaria o aviso "O Windows protegeu o computador" na primeira vez. Precisa de um certificado de assinatura de código (pago).
 - **Observar "muitas consultas" (429):** se aparecer com o uso, aumentar o intervalo ou a pausa.
 
 ## Suporte ao Linux

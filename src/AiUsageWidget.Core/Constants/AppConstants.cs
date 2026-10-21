@@ -10,7 +10,7 @@ public static class AppConstants
     public const string AppName = "AiUsageWidget";
     public const string SingleInstanceMutex = "AiUsageWidget.SingleInstance";
 
-    /// <summary>Configurações do usuário (tema, posição, intervalo...).</summary>
+    /// <summary>Configurações do usuário (tema, tamanho, posição, contas visíveis...).</summary>
     public static string SettingsFolder { get; } =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppName);
 

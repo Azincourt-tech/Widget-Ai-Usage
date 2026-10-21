@@ -1,0 +1,26 @@
+# Compila e roda os testes a cada envio para a develop e em pull requests (sem gerar .exe).
+name: CI
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    # Windows: a interface compila com o alvo do Windows 10 (notificações nativas).
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      # Sem o secret do Antigravity: compila igual, e os testes usam um secret fictício.
+      - name: Compilar
+        run: dotnet build AiUsageWidget.sln -c Release
+
+      - name: Testar
+        run: dotnet test AiUsageWidget.sln -c Release --no-build

@@ -4,6 +4,8 @@ Widget de área de trabalho que mostra os limites de uso das IAs conectadas (Cla
 
 Segue o mesmo padrão do projeto irmão `C:\Dev\SteamWishlistWidget` (Core separado, temas Vidro/Escuro/Claro, `--demo`). Na dúvida sobre uma solução visual, veja como foi feito lá. Ideias planejadas: [docs/ROADMAP.md](docs/ROADMAP.md).
 
+**Documentação (pedido do usuário):** o [README](README.md) é só para o **usuário final** (o que é, como baixar, como usar, perguntas frequentes, privacidade, como remover), sem nada de código. O que é técnico (compilar, secret, arquitetura, dados no PC, CI e release) fica em [docs/DESENVOLVIMENTO.md](docs/DESENVOLVIMENTO.md). Ao mudar um comportamento, atualize os dois quando couber.
+
 ## Como trabalhar com o usuário
 
 - **Converse sempre em português (Brasil).** Comentários no código, textos da interface e documentação também em português.
@@ -127,3 +129,4 @@ O Antigravity (IDE e CLI `agy`) usa login Google e **uma cota só, por conta**: 
 - **Windows primeiro, depois Linux.** O Linux é testado por um amigo do usuário: mudanças para Linux precisam de instruções claras de como testar (comandos, o que conferir). Falta no Linux: cofre com libsecret (`secret-tool`), abrir o navegador com `xdg-open` e conferir Vidro/cantos (ver ROADMAP). Hoje `PlatformServices` lança `PlatformNotSupportedException` fora do Windows (exceto no `--demo`).
 - **Não escreva código específico de macOS** (Keychain, `open`, `.app`, etc.).
 - **Git:** repositório `https://github.com/Azincourt-tech/Widget-Ai-Usage` (licença MIT). Trabalho na branch `develop`; a `main` só recebe o que for lançado. Nome e e-mail dos commits ficam **só neste repositório** (`.git/config`), porque o git global deste PC usa o e-mail do trabalho, que não pode ir para o histórico: confira com `git config --show-origin user.email` antes de commitar. Commit e push só quando o usuário pedir.
+- **GitHub Actions:** `.github/workflows/ci.yml` (build e testes em push na `develop` e em PR) e `release.yml` (push na `main`: testes, `.exe` único autossuficiente de ~58 MB com `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true`, e release `v<Version>` com o arquivo `AiUsageWidget-v<Version>-win-x64.exe`). A versão vem da `<Version>` do `Directory.Build.props`; se a release já existe, o workflow falha (é preciso subir a versão). O secret vem de `secrets.ANTIGRAVITY_CLIENT_SECRET` na variável `AntigravityClientSecret`; sem ele o workflow de release falha de propósito. Sem trimming (Avalonia e System.Text.Json usam reflexão). O `.exe` não é assinado: o SmartScreen avisa na primeira vez.
