@@ -1,0 +1,27 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:AiUsageWidget.Converters"
+             x:Class="AiUsageWidget.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- As cores do tema são adicionadas pelo ThemeManager ao iniciar e trocadas em tempo real. -->
+                <ResourceInclude Source="avares://AiUsageWidget/Styles/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- JetBrains Mono embutida (Assets/Fonts), igual em qualquer sistema -->
+            <FontFamily x:Key="UiFont">avares://AiUsageWidget/Assets/Fonts#JetBrainsMono Nerd Font</FontFamily>
+            <CornerRadius x:Key="OverlayCornerRadius">10</CornerRadius>
+
+            <conv:HexToBrushConverter x:Key="HexToBrush" />
+            <conv:ValueEqualsConverter x:Key="ValueEquals" />
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://AiUsageWidget/Styles/Controls.axaml" />
+    </Application.Styles>
+</Application>

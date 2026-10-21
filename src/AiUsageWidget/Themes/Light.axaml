@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Tema Claro (inspirado no modo claro do macOS) -->
+
+    <SolidColorBrush x:Key="PanelBackground" Color="#F7FFFFFF" />
+    <SolidColorBrush x:Key="PanelBorder" Color="#14000000" />
+    <SolidColorBrush x:Key="WindowBackground" Color="#FFF2F2F7" />
+    <SolidColorBrush x:Key="CardBackground" Color="#FFFFFFFF" />
+
+    <SolidColorBrush x:Key="TextMain" Color="#FF1D1D1F" />
+    <SolidColorBrush x:Key="TextDim" Color="#FF6E6E73" />
+    <SolidColorBrush x:Key="Hairline" Color="#17000000" />
+    <SolidColorBrush x:Key="HoverFill" Color="#0D000000" />
+
+    <SolidColorBrush x:Key="Accent" Color="#FF007AFF" />
+    <SolidColorBrush x:Key="AccentSoft" Color="#24007AFF" />
+    <SolidColorBrush x:Key="Green" Color="#FF248A3D" />
+    <SolidColorBrush x:Key="GreenSoft" Color="#2434C759" />
+    <SolidColorBrush x:Key="Danger" Color="#FFFF3B30" />
+
+    <SolidColorBrush x:Key="MenuBackground" Color="#F7F9F9F9" />
+    <SolidColorBrush x:Key="MenuBorder" Color="#1F000000" />
+    <SolidColorBrush x:Key="InputBackground" Color="#FFF2F2F7" />
+    <SolidColorBrush x:Key="ScrollThumb" Color="#33000000" />
+    <SolidColorBrush x:Key="ScrollThumbHover" Color="#66000000" />
+    <SolidColorBrush x:Key="SegmentTrack" Color="#1F767680" />
+    <SolidColorBrush x:Key="SegmentSelected" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="SwitchOff" Color="#29787880" />
+    <SolidColorBrush x:Key="ButtonFill" Color="#1F767680" />
+
+    <!-- Etiqueta do plano e trilha dos anéis -->
+    <SolidColorBrush x:Key="TagBorder" Color="#26000000" />
+    <SolidColorBrush x:Key="RingTrack" Color="#14000000" />
+
+</ResourceDictionary>

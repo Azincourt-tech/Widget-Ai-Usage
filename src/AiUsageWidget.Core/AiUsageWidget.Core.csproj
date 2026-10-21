@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Núcleo do widget, independente de sistema operacional e de framework de interface:
+    modelos, ViewModels, provedores de uso das IAs e configurações. Roda em Windows e Linux.
+    As partes que dependem do sistema ficam atrás de interfaces (Services/Abstractions).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>AiUsageWidget</RootNamespace>
+    <AssemblyName>AiUsageWidget.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MVVM: ObservableObject, [ObservableProperty] e [RelayCommand] -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="AiUsageWidget.Tests" />
+  </ItemGroup>
+
+  <!--
+    client_secret do Antigravity, fora do repositório: vem do Directory.Build.local.props (ignorado pelo
+    git) ou da variável de ambiente AntigravityClientSecret (ex.: secret do GitHub Actions). Sem ele, o
+    widget compila e o card do Antigravity avisa que não está configurado.
+  -->
+  <ItemGroup Condition="'$(AntigravityClientSecret)' != ''">
+    <AssemblyMetadata Include="AntigravityClientSecret" Value="$(AntigravityClientSecret)" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Tema Vidro: igual ao Escuro, mas com o fundo do painel translúcido para o desfoque do sistema aparecer. -->
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://AiUsageWidget/Themes/Dark.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <SolidColorBrush x:Key="PanelBackground" Color="#8C1C1C1E" />
+
+</ResourceDictionary>

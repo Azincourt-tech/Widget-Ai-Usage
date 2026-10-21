@@ -1,0 +1,147 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AiUsageWidget.ViewModels"
+        x:Class="AiUsageWidget.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="Configurações"
+        Icon="/Assets/icon.ico"
+        Width="420"
+        SizeToContent="Height"
+        WindowDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
+    </Window.KeyBindings>
+
+    <Window.Styles>
+        <!-- Título de cada grupo -->
+        <Style Selector="TextBlock.section">
+            <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="12,14,0,6" />
+        </Style>
+        <!-- Cartão que agrupa as opções -->
+        <Style Selector="Border.group">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="12,4" />
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Grid.row">
+            <Setter Property="MinHeight" Value="40" />
+        </Style>
+        <Style Selector="Border.divider">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource Hairline}" />
+        </Style>
+        <!-- Sem linha divisória acima da primeira conta -->
+        <Style Selector="ItemsControl#ProviderToggles ContentPresenter:nth-child(1) Border.divider">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+    </Window.Styles>
+
+    <Border Name="Root" Margin="16" CornerRadius="20" Background="{DynamicResource WindowBackground}"
+            BorderBrush="{DynamicResource PanelBorder}" BorderThickness="1" Padding="16,14,16,16"
+            BoxShadow="0 8 30 0 #59000000">
+        <StackPanel>
+            <!-- Título (a janela arrasta por qualquer parte que não seja um controle) -->
+            <Grid Background="Transparent">
+                <TextBlock Text="Configurações" Foreground="{DynamicResource TextMain}" FontSize="14" FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <Button Classes="icon" HorizontalAlignment="Right" ToolTip.Tip="Fechar" AutomationProperties.Name="Fechar" Command="{Binding CancelCommand}">
+                    <PathIcon Data="{StaticResource IconClose}" />
+                </Button>
+            </Grid>
+
+            <!-- Aparência -->
+            <TextBlock Classes="section" Text="APARÊNCIA" />
+            <Border Classes="group">
+                <StackPanel>
+                    <Grid Classes="row">
+                        <TextBlock Classes="label" Text="Tema" />
+                        <Border Classes="segmentTrack">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Theme" Content="Vidro"
+                                             IsChecked="{Binding Theme, Converter={StaticResource ValueEquals}, ConverterParameter=Glass}" />
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Theme" Content="Escuro"
+                                             IsChecked="{Binding Theme, Converter={StaticResource ValueEquals}, ConverterParameter=Dark}" />
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Theme" Content="Claro"
+                                             IsChecked="{Binding Theme, Converter={StaticResource ValueEquals}, ConverterParameter=Light}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <Border Classes="divider" />
+                    <Grid Classes="row">
+                        <TextBlock Classes="label" Text="Tamanho" />
+                        <Border Classes="segmentTrack">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Size" Content="Pequeno"
+                                             IsChecked="{Binding Size, Converter={StaticResource ValueEquals}, ConverterParameter=Small}" />
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Size" Content="Médio"
+                                             IsChecked="{Binding Size, Converter={StaticResource ValueEquals}, ConverterParameter=Medium}" />
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Size" Content="Grande"
+                                             IsChecked="{Binding Size, Converter={StaticResource ValueEquals}, ConverterParameter=Large}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Contas -->
+            <TextBlock Classes="section" Text="CONTAS NO WIDGET" />
+            <Border Classes="group">
+                <ItemsControl Name="ProviderToggles" ItemsSource="{Binding Providers}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ProviderToggleViewModel">
+                            <StackPanel>
+                                <Border Classes="divider" />
+                                <Grid Classes="row">
+                                    <TextBlock Classes="label" Text="{Binding Name}" />
+                                    <CheckBox Theme="{StaticResource SwitchTheme}" VerticalAlignment="Center" IsChecked="{Binding IsVisible}"
+                                              AutomationProperties.Name="{Binding Name}" />
+                                </Grid>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <!-- Sistema -->
+            <TextBlock Classes="section" Text="SISTEMA" />
+            <Border Classes="group">
+                <StackPanel>
+                    <Grid Classes="row">
+                        <TextBlock Classes="label" Text="Avisar em 80% e 95%" />
+                        <CheckBox Theme="{StaticResource SwitchTheme}" VerticalAlignment="Center" IsChecked="{Binding Notifications}"
+                                  AutomationProperties.Name="Avisar em 80% e 95%" />
+                    </Grid>
+                    <Border Classes="divider" />
+                    <Grid Classes="row">
+                        <TextBlock Classes="label" Text="Iniciar com o Windows" />
+                        <CheckBox Theme="{StaticResource SwitchTheme}" VerticalAlignment="Center" IsChecked="{Binding StartWithWindows}"
+                                  AutomationProperties.Name="Iniciar com o Windows" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Danger}" FontSize="11" TextWrapping="Wrap"
+                       Margin="4,12,4,0" IsVisible="{Binding HasError}" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button Classes="pill secondary" Content="Cancelar" Margin="0,0,8,0" Command="{Binding CancelCommand}" />
+                <Button Classes="pill" Content="Salvar" IsDefault="True" Command="{Binding SaveCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
