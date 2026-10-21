@@ -1,0 +1,27 @@
+name: Sugerir uma ideia
+description: Uma melhoria ou algo novo para o widget.
+title: "[Ideia] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: ideia
+    attributes:
+      label: O que você gostaria
+      description: 'Descreva a ideia como usuário (ex.: "queria ver também o limite diário do...").'
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivo
+    attributes:
+      label: Por que ajudaria
+      description: Que problema ela resolve ou o que fica mais fácil.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas que você pensou (opcional)
+    validations:
+      required: false

@@ -138,3 +138,4 @@ Sem trimming, porque o Avalonia e o System.Text.Json usam reflexão. O `.exe` n�
 
 - **Dependabot** (`.github/dependabot.yml`): toda segunda-feira abre PRs para a `develop` com versões novas dos pacotes NuGet (os do Avalonia juntos num PR) e das actions do GitHub. As correções de segurança são ligadas em Settings > Advanced Security.
 - **Falhas de segurança:** reportadas pelo canal privado do GitHub, como explica o [SECURITY.md](../SECURITY.md).
+- **Issues:** só pelos formulários em `.github/ISSUE_TEMPLATE/` ("Reportar um problema" e "Sugerir uma ideia"), que pedem para não colar tokens nem dados das contas. A issue em branco está desligada, e o `config.yml` aponta falhas de segurança para o reporte privado.
