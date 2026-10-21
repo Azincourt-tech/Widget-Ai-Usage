@@ -1,8 +1,41 @@
-<img src="docs/images/icon.png" width="96" alt="Ícone do AI Usage Widget">
+<div align="center">
+
+<img src="docs/images/icon.png" width="110" alt="Ícone do AI Usage Widget">
 
 # AI Usage Widget
 
-Um widget de área de trabalho que mostra, de relance, quanto você ainda pode usar das suas IAs: **Claude**, **ChatGPT/Codex** e **Antigravity** (IDE e CLI). Cada conta aparece com anéis que mostram o uso da sessão de 5 horas, do dia ou da semana, quando cada limite renova e o seu plano.
+**Os limites do Claude, do Codex e do Antigravity, de relance, na sua área de trabalho.**
+
+<a href="https://github.com/Azincourt-tech/Widget-Ai-Usage/releases/latest"><img src="https://img.shields.io/github/v/release/Azincourt-tech/Widget-Ai-Usage?label=vers%C3%A3o&color=A970FF" alt="Versão"></a>
+<a href="https://github.com/Azincourt-tech/Widget-Ai-Usage/releases"><img src="https://img.shields.io/github/downloads/Azincourt-tech/Widget-Ai-Usage/total?label=downloads&color=D97757" alt="Downloads"></a>
+<a href="https://github.com/Azincourt-tech/Widget-Ai-Usage/actions/workflows/ci.yml"><img src="https://github.com/Azincourt-tech/Widget-Ai-Usage/actions/workflows/ci.yml/badge.svg?branch=develop" alt="CI"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-MIT-10A37F" alt="Licença MIT"></a>
+
+<img src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white" alt=".NET 10">
+<img src="https://img.shields.io/badge/C%23-14-239120" alt="C# 14">
+<img src="https://img.shields.io/badge/Avalonia-12-8B44AC" alt="Avalonia 12">
+<img src="https://img.shields.io/badge/MVVM-CommunityToolkit-6E4AFF" alt="MVVM com CommunityToolkit">
+<img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4" alt="Windows 10 e 11">
+<img src="https://img.shields.io/badge/Linux-em%20breve-555555" alt="Linux em breve">
+
+[**Baixar**](https://github.com/Azincourt-tech/Widget-Ai-Usage/releases/latest) · [Primeiros passos](#primeiros-passos) · [Perguntas frequentes](#perguntas-frequentes) · [Guia técnico](docs/DESENVOLVIMENTO.md)
+
+</div>
+
+---
+
+Um widget de área de trabalho que mostra quanto você ainda pode usar das suas IAs: **Claude**, **ChatGPT/Codex** e **Antigravity** (IDE e CLI). Cada conta aparece com anéis, no estilo do Apple Watch, que mostram o uso da sessão de 5 horas, do dia ou da semana, quando cada limite renova e o seu plano.
+
+## Recursos
+
+- 🎯 **Tudo num lugar só:** Claude, Codex e Antigravity lado a lado, atualizados a cada minuto.
+- ⏱️ **Quando renova:** cada anel mostra quanto falta para o limite voltar.
+- 🔔 **Avisos:** notificação do Windows quando um limite passa de 80% e de 95%.
+- 🎨 **Do seu jeito:** temas Vidro, Escuro e Claro, em três tamanhos.
+- 🔒 **Login oficial:** você entra na página de cada serviço, e o acesso fica no cofre do Windows. Nenhum dado sai do seu computador.
+- 📦 **Sem instalação:** um arquivo só, é baixar e abrir.
+
+## Visual
 
 | Vidro | Escuro | Claro |
 |---|---|---|
