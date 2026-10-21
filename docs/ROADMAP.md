@@ -12,6 +12,17 @@ Só o que ainda está pendente. O que já está pronto fica descrito no [README]
   - Assinar o `.exe` com certificado próprio não compensa agora: desde 2024 nenhum certificado tira o aviso de imediato, e a assinatura da Microsoft (Azure Artifact Signing) não está disponível para pessoa física no Brasil.
 - **Observar "muitas consultas" (429):** se aparecer com o uso, aumentar o intervalo ou a pausa.
 
+## Idiomas (inglês e espanhol)
+
+Hoje tudo está em português. Para traduzir para inglês e espanhol:
+
+- **Textos da interface e do Core** (janelas, configurações, mensagens dos cards, avisos, "renova em...") num lugar só, por exemplo arquivos `.resx` por idioma (`pt-BR`, `en`, `es`), sem texto fixo no código.
+- **Datas e horários** no formato de cada idioma (hoje o "renova sex. 21:22" usa a cultura `pt-BR` fixa).
+- **Escolha do idioma:** pelo idioma do Windows na primeira vez, com uma opção "Idioma" nas configurações.
+- **Notificações e modelos de issue** também traduzidos.
+- **README:** versões em inglês e espanhol (`README.en.md`, `README.es.md`) com links entre elas no topo.
+- **Testes:** conferir que todo texto existe nos três idiomas e que a interface não quebra com textos mais longos (o espanhol costuma ser maior que o português).
+
 ## Suporte ao Linux
 
 Hoje só o Windows funciona fora do modo demonstração. Para o Linux (testado por um amigo do usuário) falta:
