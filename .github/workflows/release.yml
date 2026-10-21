@@ -1,7 +1,7 @@
 # A cada envio para a main: testa, gera o .exe único (não precisa instalar nada para rodar) e publica uma
 # release no GitHub com a versão do Directory.Build.props. Para lançar de novo, suba a <Version> antes.
 #
-# Precisa do secret ANTIGRAVITY_CLIENT_SECRET (Settings > Secrets and variables > Actions): é o
+# Precisa do secret ANTIGRAVITY_CLIENT_SECRET no environment "release" (Settings > Environments): é o
 # client_secret do app OAuth do Antigravity, que entra no .exe pela variável de ambiente
 # AntigravityClientSecret (no PC de desenvolvimento ele vem do Directory.Build.local.props).
 name: Release
@@ -22,6 +22,8 @@ concurrency:
 jobs:
   release:
     runs-on: windows-latest
+    # O secret fica no environment "release", liberado só para a main (Settings > Environments).
+    environment: release
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -53,7 +55,7 @@ jobs:
         run: |
           # Sem ele o .exe funcionaria, mas o card do Antigravity diria "não configurado" para todo mundo.
           if ([string]::IsNullOrWhiteSpace($env:AntigravityClientSecret)) {
-            throw "Cadastre o secret ANTIGRAVITY_CLIENT_SECRET em Settings > Secrets and variables > Actions."
+            throw "Cadastre o secret ANTIGRAVITY_CLIENT_SECRET no environment release (Settings > Environments)."
           }
 
       - name: Testar

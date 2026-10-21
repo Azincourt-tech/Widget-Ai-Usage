@@ -120,7 +120,7 @@ Em todo push na `develop` e em pull requests: compila e roda os testes no Window
 Em todo push na `main` (ou à mão, pela aba Actions):
 
 1. Lê a `<Version>` do `Directory.Build.props`. **Para** se a release `v<versão>` já existir.
-2. **Para** se o secret `ANTIGRAVITY_CLIENT_SECRET` não estiver cadastrado (Settings > Secrets and variables > Actions).
+2. **Para** se o secret `ANTIGRAVITY_CLIENT_SECRET` não estiver cadastrado no environment `release` (Settings > Environments > release, com "Deployment branches" limitado à `main`, para nenhum workflow de outra branch conseguir usar o secret).
 3. Roda os testes.
 4. Gera o `.exe` único e autossuficiente (cerca de 58 MB, não precisa do .NET instalado):
 
@@ -133,3 +133,8 @@ Em todo push na `main` (ou à mão, pela aba Actions):
 **Para lançar uma versão:** suba a `<Version>` no `Directory.Build.props` (ex.: `0.2.0`) e envie para a `main`.
 
 Sem trimming, porque o Avalonia e o System.Text.Json usam reflexão. O `.exe` não é assinado, então o SmartScreen avisa na primeira execução.
+
+### Dependências e segurança
+
+- **Dependabot** (`.github/dependabot.yml`): toda segunda-feira abre PRs para a `develop` com versões novas dos pacotes NuGet (os do Avalonia juntos num PR) e das actions do GitHub. As correções de segurança são ligadas em Settings > Advanced Security.
+- **Falhas de segurança:** reportadas pelo canal privado do GitHub, como explica o [SECURITY.md](../SECURITY.md).

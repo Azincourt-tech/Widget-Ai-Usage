@@ -1,0 +1,29 @@
+# Atualizações de versão abertas pelo Dependabot (as de segurança são ligadas em Settings > Advanced Security).
+# Os PRs vão para a develop, como o resto do trabalho; a main só recebe o que for lançado.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Os pacotes do Avalonia precisam andar juntos (mesma versão).
+      avalonia:
+        patterns: ["Avalonia*"]
+      # Correções e versões menores do resto num PR só.
+      outros:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]
