@@ -1,0 +1,86 @@
+name: Reportar um problema
+description: Algo no widget não funciona como deveria.
+title: "[Problema] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar! Antes de enviar:
+        - **Nunca cole tokens, senhas, e-mails ou dados reais das suas contas** (os percentuais também ficam de fora, se não forem necessários). Esta issue é pública.
+        - Achou uma **falha de segurança**? Não abra uma issue: use o reporte privado, como explica o [SECURITY.md](https://github.com/Azincourt-tech/Widget-Ai-Usage/blob/main/SECURITY.md).
+
+  - type: dropdown
+    id: conta
+    attributes:
+      label: Onde acontece
+      options:
+        - Claude
+        - Codex
+        - Antigravity
+        - Em todas as contas
+        - Na interface (temas, tamanhos, configurações, avisos)
+        - Outro lugar
+    validations:
+      required: true
+
+  - type: textarea
+    id: o-que-aconteceu
+    attributes:
+      label: O que aconteceu
+      description: Se o card mostrou uma mensagem, copie o texto dela.
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos
+    attributes:
+      label: Como reproduzir
+      description: Os passos até o problema aparecer.
+      placeholder: |
+        1. Abri o widget
+        2. Cliquei em "Entrar" no Codex
+        3. ...
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que você esperava
+    validations:
+      required: false
+
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do widget
+      description: "Está no nome do arquivo baixado (ex.: AiUsageWidget-v0.1.0-win-x64.exe)."
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows
+      options:
+        - Windows 11
+        - Windows 10
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Log de erros (opcional)
+      description: |
+        Se existir, cole as últimas linhas de `%LOCALAPPDATA%\AiUsageWidget\logs\error.log`.
+        Confira antes que não há nada pessoal no trecho.
+      render: text
+
+  - type: checkboxes
+    id: privacidade
+    attributes:
+      label: Privacidade
+      options:
+        - label: Confirmo que não colei tokens, senhas, e-mails nem dados das minhas contas.
+          required: true

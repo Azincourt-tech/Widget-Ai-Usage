@@ -1,0 +1,77 @@
+# A cada envio para a main: testa, gera o .exe único (não precisa instalar nada para rodar) e publica uma
+# release no GitHub com a versão do Directory.Build.props. Para lançar de novo, suba a <Version> antes.
+#
+# Precisa do secret ANTIGRAVITY_CLIENT_SECRET no environment "release" (Settings > Environments): é o
+# client_secret do app OAuth do Antigravity, que entra no .exe pela variável de ambiente
+# AntigravityClientSecret (no PC de desenvolvimento ele vem do Directory.Build.local.props).
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Duas releases ao mesmo tempo poderiam disputar a mesma versão.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    # O secret fica no environment "release", liberado só para a main (Settings > Environments).
+    environment: release
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Ler a versão
+        id: version
+        run: |
+          $version = (Select-Xml -Path Directory.Build.props -XPath '//Version').Node.InnerText.Trim()
+          if (-not $version) { throw "Não achei a <Version> no Directory.Build.props." }
+
+          # Não sobrescreve uma release que já existe: cada lançamento precisa de uma versão nova.
+          gh release view "v$version" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "A release v$version já existe. Suba a <Version> no Directory.Build.props antes de enviar para a main."
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Output "Versão: $version"
+          exit 0
+
+      - name: Conferir o secret do Antigravity
+        env:
+          AntigravityClientSecret: ${{ secrets.ANTIGRAVITY_CLIENT_SECRET }}
+        run: |
+          # Sem ele o .exe funcionaria, mas o card do Antigravity diria "não configurado" para todo mundo.
+          if ([string]::IsNullOrWhiteSpace($env:AntigravityClientSecret)) {
+            throw "Cadastre o secret ANTIGRAVITY_CLIENT_SECRET no environment release (Settings > Environments)."
+          }
+
+      - name: Testar
+        run: dotnet test AiUsageWidget.sln -c Release
+
+      - name: Gerar o .exe
+        env:
+          AntigravityClientSecret: ${{ secrets.ANTIGRAVITY_CLIENT_SECRET }}
+        run: >
+          dotnet publish src/AiUsageWidget -c Release -r win-x64 --self-contained
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true -p:DebugType=none -o publish
+
+      - name: Publicar a release
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $file = "AiUsageWidget-v$version-win-x64.exe"
+          Move-Item publish/AiUsageWidget.exe $file
+          gh release create "v$version" $file --title "AI Usage Widget v$version" --generate-notes --target $env:GITHUB_SHA

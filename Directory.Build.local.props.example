@@ -1,0 +1,18 @@
+<Project>
+
+  <!--
+    Modelo dos segredos do build. Copie para Directory.Build.local.props (ignorado pelo git) e preencha.
+    Nunca coloque os valores neste arquivo: ele vai para o repositório.
+
+    Alternativa: definir a variável de ambiente de mesmo nome (ex.: secret do GitHub Actions).
+  -->
+  <PropertyGroup>
+    <!--
+      client_secret do app OAuth do Antigravity (app instalado do Google). Está no Antigravity IDE
+      instalado, em resources\app\out\main.js (procure por "GOCSPX"). Sem ele, o card do Antigravity
+      avisa que não está configurado; Claude e Codex funcionam normalmente.
+    -->
+    <AntigravityClientSecret></AntigravityClientSecret>
+  </PropertyGroup>
+
+</Project>

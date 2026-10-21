@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Interface do widget em Avalonia, para Windows (hoje) e Linux (próximo). macOS não é suportado.
+    A lógica fica no AiUsageWidget.Core.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!--
+      No Windows, o alvo do Windows 10+ libera as notificações nativas (pacote abaixo). No Linux, o alvo
+      comum, sem o pacote. O código só do Windows fica dentro de #if WINDOWS.
+    -->
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <AssemblyName>AiUsageWidget</AssemblyName>
+    <RootNamespace>AiUsageWidget</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Ícone do .exe (também o das notificações) -->
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Product>AI Usage Widget</Product>
+    <!-- Vira a descrição do .exe: é o nome que o Windows mostra nas notificações -->
+    <AssemblyTitle>AI Usage Widget</AssemblyTitle>
+    <Description>Widget de área de trabalho com os limites de uso das IAs conectadas (Claude, Codex, Antigravity).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+  </ItemGroup>
+
+  <!-- Notificações nativas do Windows (avisos de 80% e 95%), também para apps fora da Microsoft Store -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    <!-- O pacote acima puxa o System.Drawing.Common 4.7.0, com falha de segurança conhecida (GHSA-rxg9-xrhp-64gj) -->
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- JetBrains Mono embutida no executável (licença SIL OFL 1.1) -->
+    <AvaloniaResource Include="Assets\Fonts\*.ttf" />
+    <!-- Ícone das janelas (Alt+Tab) -->
+    <AvaloniaResource Include="Assets\icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AiUsageWidget.Core\AiUsageWidget.Core.csproj" />
+  </ItemGroup>
+
+</Project>

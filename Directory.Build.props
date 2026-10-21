@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- Configurações comuns a todos os projetos da solução -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+
+    <Version>0.1.0</Version>
+    <Authors>Willian Almeida</Authors>
+    <Copyright>Copyright © 2026 Willian Almeida</Copyright>
+  </PropertyGroup>
+
+  <!-- Segredos do build, só neste PC (ignorado pelo git). Modelo: Directory.Build.local.props.example -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+
+</Project>

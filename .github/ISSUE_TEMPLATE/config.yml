@@ -1,0 +1,9 @@
+# Sem issue em branco: só os formulários de problema e de ideia.
+blank_issues_enabled: false
+contact_links:
+  - name: Falha de segurança
+    url: https://github.com/Azincourt-tech/Widget-Ai-Usage/security/advisories/new
+    about: Reporte em particular, sem abrir uma issue pública.
+  - name: Como usar o widget
+    url: https://github.com/Azincourt-tech/Widget-Ai-Usage#primeiros-passos
+    about: Como baixar, entrar nas contas e as perguntas frequentes.

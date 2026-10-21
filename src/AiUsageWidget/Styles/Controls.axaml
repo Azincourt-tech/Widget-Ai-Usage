@@ -1,0 +1,150 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctl="using:AiUsageWidget.Controls">
+
+    <!-- Estilos dos controles. As cores vêm do tema ativo (pasta Themes) via DynamicResource. -->
+
+    <Styles.Resources>
+        <!-- Controle segmentado estilo macOS: RadioButtons dentro de uma trilha -->
+        <ControlTheme x:Key="SegmentTheme" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="9,3" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Bd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:pointerover /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource HoverFill}" />
+            </Style>
+            <Style Selector="^:checked /template/ Border#Bd">
+                <Setter Property="Background" Value="{DynamicResource SegmentSelected}" />
+            </Style>
+            <Style Selector="^:checked">
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+        </ControlTheme>
+
+        <!-- Interruptor estilo macOS -->
+        <ControlTheme x:Key="SwitchTheme" TargetType="CheckBox">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel Width="38" Height="22">
+                        <Border Name="Track" CornerRadius="11" Background="{DynamicResource SwitchOff}" />
+                        <Ellipse Name="Knob" Width="18" Height="18" Margin="2" Fill="White" HorizontalAlignment="Left" />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:checked /template/ Border#Track">
+                <Setter Property="Background" Value="{DynamicResource Green}" />
+            </Style>
+            <Style Selector="^:checked /template/ Ellipse#Knob">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+            </Style>
+        </ControlTheme>
+    </Styles.Resources>
+
+    <!-- Trilha do controle segmentado -->
+    <Style Selector="Border.segmentTrack">
+        <Setter Property="Background" Value="{DynamicResource SegmentTrack}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Fonte padrão de todas as janelas -->
+    <Style Selector="Window">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+    </Style>
+
+    <!-- Botões redondos de ícone -->
+    <Style Selector="Button.icon">
+        <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="2,0,0,0" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.icon PathIcon">
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="12" />
+    </Style>
+    <Style Selector="Button.icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource HoverFill}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMain}" />
+    </Style>
+    <Style Selector="Button.icon:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource HoverFill}" />
+    </Style>
+
+    <!-- Botão de ícone ligado (ex.: fixar): cor de destaque com fundo suave, também ao passar o mouse -->
+    <Style Selector="Button.icon.active /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="Button.icon.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+
+    <!-- Botão principal (azul) e secundário (cinza), em formato de pílula -->
+    <Style Selector="Button.pill">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource Accent}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.pill.secondary">
+        <Setter Property="Foreground" Value="{DynamicResource TextMain}" />
+        <Setter Property="Background" Value="{DynamicResource ButtonFill}" />
+    </Style>
+    <Style Selector="Button.pill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Accent}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Opacity" Value="0.85" />
+    </Style>
+    <Style Selector="Button.pill.secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ButtonFill}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMain}" />
+    </Style>
+
+    <!-- Anéis: o arco "enche" suavemente quando o valor muda -->
+    <Style Selector="ctl|UsageRing">
+        <Setter Property="TrackBrush" Value="{DynamicResource RingTrack}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="ctl:UsageRing.Value" Duration="0:0:0.6" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Menu de clique direito -->
+    <Style Selector="ContextMenu">
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+    </Style>
+
+</Styles>

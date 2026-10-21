@@ -1,0 +1,309 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AiUsageWidget.ViewModels"
+        xmlns:ctl="using:AiUsageWidget.Controls"
+        x:Class="AiUsageWidget.Views.MainWindow"
+        x:DataType="vm:WidgetViewModel"
+        Title="AI Usage Widget"
+        Icon="/Assets/icon.ico"
+        SizeToContent="WidthAndHeight"
+        WindowDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual"
+        Topmost="{Binding IsPinned}">
+
+    <!--
+        Visual minimalista e baixo: sem título, uma linha por conta (nome e plano à esquerda, anéis à
+        direita), separadas por linhas finas. Os botões ficam numa coluna fina à direita e só aparecem ao
+        passar o mouse; "atualizar" e a hora da última leitura ficam no menu do clique direito.
+        O tamanho (pequeno, médio, grande) vem das classes small/large no PanelView; a largura é ajustada
+        no código (MainWindow.axaml.cs).
+    -->
+    <Window.Styles>
+        <!-- Botões aparecem ao passar o mouse sobre o painel -->
+        <Style Selector="StackPanel#WidgetButtons">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border#PanelView:pointerover StackPanel#WidgetButtons">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="StackPanel#WidgetButtons Button.icon">
+            <Setter Property="Width" Value="22" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+
+        <!-- Linha fina entre as contas (não aparece acima da primeira) -->
+        <Style Selector="Border.separator">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource Hairline}" />
+            <Setter Property="Margin" Value="0,10" />
+        </Style>
+        <Style Selector="ItemsControl#ProviderList ContentPresenter:nth-child(1) Border.separator">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- Conta esmaece levemente enquanto atualiza -->
+        <Style Selector="Grid.provider">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Grid.provider.loading">
+            <Setter Property="Opacity" Value="0.55" />
+        </Style>
+
+        <!-- Botão de sair da conta só aparece ao passar o mouse sobre a conta -->
+        <Style Selector="Grid.provider Button#SignOutButton">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+        </Style>
+        <Style Selector="Grid.provider:pointerover Button#SignOutButton">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Grid.provider Button#SignOutButton PathIcon">
+            <Setter Property="Width" Value="10" />
+            <Setter Property="Height" Value="10" />
+        </Style>
+
+        <!-- Etiqueta do plano: só contorno, discreta -->
+        <Style Selector="Border.tag">
+            <Setter Property="BorderBrush" Value="{DynamicResource TagBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- ===== Tamanhos: médio é o padrão; pequeno e grande sobrescrevem ===== -->
+        <Style Selector="StackPanel.info">
+            <Setter Property="Width" Value="108" />
+        </Style>
+        <Style Selector="TextBlock.providerName">
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="Panel.ring">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="42" />
+        </Style>
+        <Style Selector="ctl|UsageRing">
+            <Setter Property="StrokeWidth" Value="4" />
+        </Style>
+        <Style Selector="TextBlock.percent">
+            <Setter Property="FontSize" Value="10" />
+        </Style>
+        <Style Selector="TextBlock.windowLabel">
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="TextBlock.shortLabel">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="TextBlock.reset">
+            <Setter Property="FontSize" Value="10" />
+        </Style>
+
+        <Style Selector="Border#PanelView.small StackPanel.info">
+            <Setter Property="Width" Value="92" />
+        </Style>
+        <Style Selector="Border#PanelView.small TextBlock.providerName">
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="Border#PanelView.small Panel.ring">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+        </Style>
+        <Style Selector="Border#PanelView.small ctl|UsageRing">
+            <Setter Property="StrokeWidth" Value="3" />
+        </Style>
+        <Style Selector="Border#PanelView.small TextBlock.percent">
+            <Setter Property="FontSize" Value="8.5" />
+        </Style>
+        <Style Selector="Border#PanelView.small TextBlock.windowLabel">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="Border#PanelView.small TextBlock.shortLabel">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="Border#PanelView.small TextBlock.reset">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="Border#PanelView.small Border.separator">
+            <Setter Property="Margin" Value="0,8" />
+        </Style>
+        <!-- No pequeno, sem login aparece só o botão "Entrar" (a mensagem fica para o médio e o grande) -->
+        <Style Selector="Border#PanelView.small TextBlock.signInMessage">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Border#PanelView.large StackPanel.info">
+            <Setter Property="Width" Value="128" />
+        </Style>
+        <Style Selector="Border#PanelView.large TextBlock.providerName">
+            <Setter Property="FontSize" Value="13.5" />
+        </Style>
+        <Style Selector="Border#PanelView.large Panel.ring">
+            <Setter Property="Width" Value="56" />
+            <Setter Property="Height" Value="56" />
+        </Style>
+        <Style Selector="Border#PanelView.large ctl|UsageRing">
+            <Setter Property="StrokeWidth" Value="5" />
+        </Style>
+        <Style Selector="Border#PanelView.large TextBlock.percent">
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Border#PanelView.large TextBlock.windowLabel">
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Border#PanelView.large TextBlock.reset">
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="Border#PanelView.large Border.separator">
+            <Setter Property="Margin" Value="0,13" />
+        </Style>
+    </Window.Styles>
+
+    <Panel>
+        <Panel.ContextMenu>
+            <ContextMenu>
+                <!-- Hora da última leitura (só informação) -->
+                <MenuItem Header="{Binding Subtitle}" IsEnabled="False" />
+                <Separator />
+                <MenuItem Header="Atualizar agora" Command="{Binding RefreshCommand}" />
+                <MenuItem Header="Configurações..." Command="{Binding OpenSettingsCommand}" />
+                <MenuItem Header="Fixar (sempre visível)" ToggleType="CheckBox" IsChecked="{Binding IsPinned, Mode=OneWay}"
+                          Command="{Binding TogglePinCommand}" />
+                <Separator />
+                <MenuItem Header="Fechar" Command="{Binding CloseCommand}" />
+            </ContextMenu>
+        </Panel.ContextMenu>
+
+        <!-- A margem dá espaço para a sombra nos temas Escuro e Claro. -->
+        <Panel Name="PanelHost" Margin="14">
+            <Border Name="PanelView" CornerRadius="22" Background="{DynamicResource PanelBackground}"
+                    BorderBrush="{DynamicResource PanelBorder}" BorderThickness="1" Padding="16,12,8,12"
+                    BoxShadow="0 8 30 0 #47000000"
+                    Classes.small="{Binding IsSmall}" Classes.large="{Binding IsLarge}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center">
+                        <!-- Nenhuma conta para mostrar -->
+                        <TextBlock IsVisible="{Binding !HasProviders}" Foreground="{DynamicResource TextDim}" FontSize="11" TextWrapping="Wrap"
+                                   Text="Nenhuma conta para mostrar. Escolha as contas nas configurações." />
+
+                        <!-- Uma linha por conta -->
+                        <ItemsControl Name="ProviderList" ItemsSource="{Binding Providers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ProviderCardViewModel">
+                                    <StackPanel>
+                                        <Border Classes="separator" />
+                                        <Grid Classes="provider" Classes.loading="{Binding IsLoading}" ColumnDefinitions="Auto,*"
+                                              Background="Transparent">
+                                            <!-- Esquerda: ponto colorido, nome e plano -->
+                                            <StackPanel Classes="info" VerticalAlignment="Center">
+                                                <!-- Grid (e não StackPanel) para o nome longo ser cortado com "..." na largura da coluna -->
+                                                <Grid ColumnDefinitions="Auto,*">
+                                                    <Ellipse Width="7" Height="7" Margin="0,0,7,0" VerticalAlignment="Center"
+                                                             Fill="{Binding AccentColor, Converter={StaticResource HexToBrush}}" />
+                                                    <TextBlock Grid.Column="1" Classes="providerName" Text="{Binding Name}" ToolTip.Tip="{Binding Name}"
+                                                               Foreground="{DynamicResource TextMain}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                </Grid>
+                                                <StackPanel Orientation="Horizontal" Margin="14,4,0,0">
+                                                    <Border Classes="tag" IsVisible="{Binding HasPlan}">
+                                                        <TextBlock Text="{Binding Plan}" Foreground="{DynamicResource TextDim}" FontSize="9.5" />
+                                                    </Border>
+                                                    <Button Name="SignOutButton" Classes="icon" Margin="4,0,0,0" IsVisible="{Binding CanSignOut}"
+                                                            ToolTip.Tip="{Binding SignOutMenuText}" AutomationProperties.Name="{Binding SignOutMenuText}"
+                                                            Command="{Binding SignOutCommand}">
+                                                        <PathIcon Data="{StaticResource IconLogout}" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <!-- Direita: anéis, ou o erro, ou o convite para entrar -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Danger}"
+                                                           FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,4" />
+
+                                                <StackPanel IsVisible="{Binding NeedsSignIn}">
+                                                    <TextBlock Classes="signInMessage" Text="{Binding SignInMessage}" Foreground="{DynamicResource TextDim}"
+                                                               FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,6" />
+                                                    <!-- O nome da conta já está à esquerda: o botão diz só "Entrar" -->
+                                                    <Button Classes="pill" Content="Entrar" AutomationProperties.Name="{Binding SignInButtonText}" HorizontalAlignment="Left"
+                                                            IsVisible="{Binding ShowSignInButton}" Command="{Binding SignInCommand}" />
+                                                    <Button Classes="pill secondary" Content="Cancelar" HorizontalAlignment="Left"
+                                                            IsVisible="{Binding IsSigningIn}" Command="{Binding CancelSignInCommand}" />
+                                                </StackPanel>
+
+                                                <!-- Mesmas colunas em todas as contas (2, ou mais se alguma tiver mais
+                                                     limites): os anéis ficam alinhados e o widget cresce para o lado -->
+                                                <ItemsControl ItemsSource="{Binding Windows}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid x:DataType="vm:ProviderCardViewModel" Columns="{Binding RingColumns}" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:UsageWindowViewModel">
+                                                            <Grid ColumnDefinitions="Auto,*" Margin="0,0,8,0" Background="Transparent"
+                                                                  ToolTip.Tip="{Binding ToolTip}">
+                                                                <Panel Classes="ring">
+                                                                    <ctl:UsageRing Value="{Binding Percent}"
+                                                                                   RingBrush="{Binding RingColor, Converter={StaticResource HexToBrush}}" />
+                                                                    <TextBlock Classes="percent" Text="{Binding PercentText}" Foreground="{DynamicResource TextMain}"
+                                                                               FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Panel>
+                                                                <StackPanel Grid.Column="1" Margin="9,0,0,0" VerticalAlignment="Center">
+                                                                    <TextBlock Classes="windowLabel" Text="{Binding Label}" Foreground="{DynamicResource TextMain}" />
+                                                                    <TextBlock Classes="shortLabel" Text="{Binding ShortLabel}" Foreground="{DynamicResource TextDim}"
+                                                                               FontSize="10" />
+                                                                    <TextBlock Classes="reset" Text="{Binding ResetText}" Foreground="{DynamicResource TextDim}"
+                                                                               Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Botões: coluna fina à direita, só ao passar o mouse. Sem dicas (atrapalhavam o clique); o nome fica para acessibilidade. -->
+                    <StackPanel Name="WidgetButtons" Grid.Column="1" Margin="6,0,0,0" VerticalAlignment="Top">
+                        <Button Classes="icon" AutomationProperties.Name="Configurações" Command="{Binding OpenSettingsCommand}">
+                            <PathIcon Data="{StaticResource IconSettings}" />
+                        </Button>
+                        <!-- Fixado: alfinete preenchido, na cor de destaque e com fundo; solto: contorno inclinado -->
+                        <Button Classes="icon" Classes.active="{Binding IsPinned}"
+                                AutomationProperties.Name="{Binding PinToolTip}" Command="{Binding TogglePinCommand}">
+                            <Panel>
+                                <PathIcon Data="{StaticResource IconPin}" IsVisible="{Binding IsPinned}" />
+                                <PathIcon Data="{StaticResource IconPinOutline}" IsVisible="{Binding !IsPinned}">
+                                    <PathIcon.RenderTransform>
+                                        <RotateTransform Angle="45" />
+                                    </PathIcon.RenderTransform>
+                                </PathIcon>
+                            </Panel>
+                        </Button>
+                        <Button Classes="icon" AutomationProperties.Name="Fechar" Command="{Binding CloseCommand}">
+                            <PathIcon Data="{StaticResource IconClose}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Panel>
+    </Panel>
+</Window>
