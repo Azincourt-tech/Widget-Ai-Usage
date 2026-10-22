@@ -4,12 +4,6 @@ Só o que ainda está pendente. O que já está pronto fica descrito no [README]
 
 ## Windows
 
-- **Microsoft Store (MSIX), em paralelo ao `.exe`:** uma tentativa de distribuição maior, **sem substituir o `.exe` do GitHub**, que continua sendo lançado igual. Na loja, a Microsoft assina o pacote, então o SmartScreen não avisa nada; a conta de desenvolvedor é grátis para pessoa física.
-  - Empacotar como MSIX no mesmo workflow de release (o `.exe` e o MSIX saem da mesma versão).
-  - Com identidade de pacote: "Iniciar com o Windows" pelo recurso do pacote (no lugar da chave `Run`) e notificações pela identidade do pacote. O `.exe` segue como hoje.
-  - Página na loja: descrição, imagens (do modo demo) e política de privacidade (nada sai do PC).
-  - Risco: a certificação pode questionar o uso dos `client_id` dos aplicativos oficiais, o `User-Agent` do Antigravity ou os nomes Claude e ChatGPT. Se recusarem, o `.exe` continua e dá para tentar o SignPath Foundation (grátis para código aberto, mas o SmartScreen ainda avisa até ganhar reputação).
-  - Assinar o `.exe` com certificado próprio não compensa agora: desde 2024 nenhum certificado tira o aviso de imediato, e a assinatura da Microsoft (Azure Artifact Signing) não está disponível para pessoa física no Brasil.
 - **Observar "muitas consultas" (429):** se aparecer com o uso, aumentar o intervalo ou a pausa.
 
 ## Idiomas (inglês e espanhol)
