@@ -21,7 +21,7 @@ Como compilar, testar, entender e lançar o AI Usage Widget. Para usar o widget,
 | Pasta | O que tem |
 |---|---|
 | `src/AiUsageWidget.Core` | Modelos, ViewModels, provedores de uso, login (OAuth) e configurações. `net10.0` puro: sem Avalonia e sem API exclusiva de um sistema |
-| `src/AiUsageWidget` | Interface Avalonia: janelas, temas (`Themes/`), estilos, o controle do anel (`Controls/UsageRing.cs`) e o que depende do sistema (`Platform/`) |
+| `src/AiUsageWidget` | Interface Avalonia: janelas, temas (`Themes/`), estilos, o controle do anel (`Controls/UsageRing.cs`), o ícone da bandeja (`Tray/`) e o que depende do sistema (`Platform/`) |
 | `tests/AiUsageWidget.Tests` | Testes do Core. Os falsos ficam em `Fakes/Fakes.cs` |
 | `docs/` | Documentação. As imagens ficam em `docs/images/` |
 | `.github/workflows/` | CI e release |
@@ -42,7 +42,7 @@ O build trata avisos como erro, e todo build precisa terminar com 0 avisos.
 dotnet run --project src/AiUsageWidget -- --demo --theme=Dark --size=Medium
 ```
 
-`--theme`: `Glass`, `Dark` ou `Light`. `--size`: `Small`, `Medium` ou `Large`.
+`--theme`: `Glass`, `Dark` ou `Light`. `--size`: `Small`, `Medium` ou `Large`. `--mode`: `Widget` ou `Tray` (ícone na bandeja).
 
 O widget abre uma cópia por vez (o modo demo tem a sua própria). Antes de recompilar, feche o widget aberto, senão o `.exe` fica travado. No Windows, o `.exe` de desenvolvimento fica em `src/AiUsageWidget/bin/Debug/net10.0-windows10.0.19041.0/`.
 
@@ -94,7 +94,21 @@ Os valores ficam em `WidgetViewModel` e são travados pelo teste `Constantes_Dec
 
 - Uma linha por conta, com os anéis em colunas iguais para todas. Se alguma conta visível tiver mais de dois anéis, todas ganham colunas e o widget cresce para o lado (`WidgetViewModel.RingColumns` e `MainWindow.PanelWidthFor`).
 - Os temas trocam em tempo real. Por isso as cores são sempre `{DynamicResource ...}`, e o Core passa cores como `#RRGGBB`.
-- O ícone (`src/AiUsageWidget/Assets/icon.ico`, de 16 a 256 px) é usado no `.exe`, nas janelas e nas notificações.
+- O ícone (`src/AiUsageWidget/Assets/icon.ico`, de 16 a 256 px) é usado no `.exe`, nas janelas, nas notificações e na bandeja.
+- **Vidro:** com o desenho por software, o Avalonia só entrega `Transparent`; o desfoque acrílico é pedido direto ao Windows (`Platform/Windows/WindowsBlur.cs`, accent policy do DWM). O visual de cada tema fica em `Views/PanelChrome.cs`, usado pelo widget e pela janelinha da bandeja.
+
+### Widget ou bandeja
+
+Nas configurações, **Mostrar como**: `Widget` ou `Tray` (`AppSettings.Mode`, um ou outro, padrão `Widget`). Vale na hora: o `App` escuta `WidgetViewModel.Mode` e troca uma janela pela outra.
+
+- **Ciclo de vida:** as leituras, o relógio e os avisos são do `WidgetViewModel`, criado uma vez no `App` (`ShutdownMode.OnExplicitShutdown`); as janelas só mostram. "Fechar" (widget) e "Sair" (bandeja) encerram o app. Ao trocar para a bandeja, o widget é fechado (não só escondido) para liberar memória; a posição fica salva.
+- **Ícone (`Tray/TrayController.cs`):** `TrayIcon` do Avalonia com o `icon.ico`. A dica é `WidgetViewModel.TrayToolTip` (`TrayToolTip.For`: uma linha por conta visível com o maior uso, até 127 caracteres, o limite do Windows). Menu do clique direito: Atualizar agora, Configurações e Sair.
+- **Janelinha (`Views/TrayPanelWindow`, `TrayPanelViewModel`):** abas por conta (a escolhida continua ao salvar as configurações) e os limites em barras.
+  - O Avalonia não informa onde está o ícone: ela abre junto ao cursor (`WindowsShell.CursorPosition`), encostada na barra de tarefas e dentro da área livre do monitor (`TrayPanelPlacement`, testado).
+  - **Posicionar só depois de mostrar:** movida ainda escondida para um monitor com outra escala, a janela não é redimensionada e o conteúdo sai cortado.
+  - Fecha ao perder o foco (menos nos primeiros 300 ms), com Esc ou num novo clique no ícone (o clique que a fechou não a reabre: folga de 400 ms).
+- **Configurações:** com o widget na tela abrem presas a ele (`ShowDialog`); no modo bandeja, sozinhas.
+- **Para conferir pela UI Automation** (sem mexer no mouse): o ícone fica em `NotifyItemIcon`, com a dica como nome; no Windows 11, ícones novos ficam na área de ícones ocultos (botão `SystemTrayIcon` "Mostrar ícones ocultos"). Invocar o ícone abre a janelinha junto ao cursor. Para capturar num monitor com escala, use um processo ciente do DPI (o PowerShell não é: as coordenadas vêm virtualizadas).
 
 ## Dados no PC do usuário
 
@@ -145,7 +159,8 @@ Medido em 22/10/2026 no `--demo` (tema Escuro, tamanho médio), com o `.exe` da 
 | Antes: `.exe` comprimido, desenho na GPU | ~75–80 MB | 85 |
 | Agora: sem compressão, desenho por software | ~29–37 MB | 14 |
 
-- **Desenho por software** (`Win32RenderingMode.Software`, no `Program.cs`): a GPU (ANGLE/Direct3D e drivers) era a maior parte da memória e das threads. O visual é o mesmo nos três temas, o desfoque do Vidro continua (vem do Windows, não do desenho) e o uso de CPU parado até caiu. O modo `Wgl` foi pior (~150 MB).
+- **Desenho por software** (`Win32RenderingMode.Software`, no `Program.cs`): a GPU (ANGLE/Direct3D e drivers) era a maior parte da memória e das threads. O visual é o mesmo nos três temas e o uso de CPU parado até caiu. O modo `Wgl` foi pior (~150 MB).
+- **O desfoque do Vidro não vem de graça com o software:** o Avalonia só oferece o `AcrylicBlur` com a GPU (com software, `ActualTransparencyLevel` fica `Transparent`; nem `CompositionMode = WinUIComposition` resolve). Por isso o `WindowsBlur` pede o acrílico ao DWM, o que não muda a memória (~37 MB no Debug, 13 threads).
 - **O heap do .NET é pequeno** (~3,6 MB). Opções do GC (`gcConcurrent`, `GCConserveMemory`, `GCHeapHardLimit`, `TieredPGO`) não mudaram nada.
 - **Como medir:** a coluna "Memória" do Gerenciador de Tarefas é o `WorkingSetPrivate` de `Win32_PerfFormattedData_PerfProc_Process`. O `WorkingSet64` do `Get-Process` é bem maior porque conta DLLs compartilhadas. Para o heap do .NET: `dotnet-counters` e `dotnet-gcdump`.
 

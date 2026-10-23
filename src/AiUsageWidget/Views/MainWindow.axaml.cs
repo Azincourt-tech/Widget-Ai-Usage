@@ -1,13 +1,11 @@
 using System.ComponentModel;
 using AiUsageWidget.Models;
-using AiUsageWidget.Platform.Windows;
 using AiUsageWidget.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -21,8 +19,6 @@ public partial class MainWindow : Window
 {
     private const double PanelRadius = 22;
     private const double ShadowMargin = 14;
-
-    private static readonly BoxShadows PanelShadow = BoxShadows.Parse("0 8 30 0 #47000000");
 
     private readonly WidgetViewModel _viewModel = null!;
 
@@ -42,23 +38,17 @@ public partial class MainWindow : Window
         PanelHost.Margin = new Thickness(PanelMarginFor(viewModel.Theme));
 
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
-        viewModel.CloseRequested += (_, _) => Close();
 
         // Arrastar por qualquer parte do painel, inclusive perto da borda.
         PanelView.AddHandler(PointerPressedEvent, Panel_PointerPressed, RoutingStrategies.Bubble, handledEventsToo: true);
 
-        Opened += async (_, _) =>
-        {
-            ApplyThemeVisuals(_viewModel.Theme);
-            await _viewModel.InitializeAsync();
-        };
-
-        Closing += (_, _) =>
-        {
-            _viewModel.Shutdown();
-            _viewModel.SaveWindowPosition(Position.X, Position.Y);
-        };
+        // As leituras e o relógio são do App (valem também para a bandeja); a janela só cuida do visual.
+        Opened += (_, _) => ApplyThemeVisuals(_viewModel.Theme);
+        Closing += (_, _) => SavePosition();
+        Closed += (_, _) => viewModel.PropertyChanged -= ViewModel_PropertyChanged;
     }
+
+    public void SavePosition() => _viewModel.SaveWindowPosition(Position.X, Position.Y);
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -147,9 +137,7 @@ public partial class MainWindow : Window
 
     // ---- Aparência ----
 
-    private static bool IsGlass(string theme) => ThemeNames.Normalize(theme) == ThemeNames.Glass;
-
-    private static double PanelMarginFor(string theme) => IsGlass(theme) ? 0 : ShadowMargin;
+    private static double PanelMarginFor(string theme) => PanelChrome.IsGlass(theme) ? 0 : ShadowMargin;
 
     private void ApplyThemeVisuals(string theme)
     {
@@ -163,23 +151,7 @@ public partial class MainWindow : Window
             Position = new PixelPoint(Position.X + delta, Position.Y + delta);
         }
 
-        var glass = IsGlass(theme);
-        PanelView.BoxShadow = glass ? default : PanelShadow;
-
-        // No Windows, o desfoque só respeita o arredondamento nativo (8 px); os cantos do painel acompanham.
-        var radius = glass && OperatingSystem.IsWindows() ? WindowsCorners.SystemCornerRadius : PanelRadius;
-        PanelView.CornerRadius = new CornerRadius(radius);
-
-        TransparencyLevelHint = glass
-            ? [WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur, WindowTransparencyLevel.Transparent]
-            : [WindowTransparencyLevel.Transparent];
-
-        // No Vidro, a janela mantém a moldura do sistema (sem barra de título): é ela que arredonda
-        // os cantos e corta o desfoque. Nos outros temas, a janela não tem moldura e o painel desenha tudo.
-        WindowDecorations = glass ? WindowDecorations.BorderOnly : WindowDecorations.None;
-
-        if (OperatingSystem.IsWindows())
-            WindowsCorners.Apply(this, round: glass);
+        PanelChrome.Apply(this, PanelView, theme, PanelRadius);
     }
 
     // ---- Arrastar ----

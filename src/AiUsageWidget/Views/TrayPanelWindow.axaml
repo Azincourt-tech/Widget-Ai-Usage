@@ -1,0 +1,174 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AiUsageWidget.ViewModels"
+        x:Class="AiUsageWidget.Views.TrayPanelWindow"
+        x:DataType="vm:TrayPanelViewModel"
+        Title="AI Usage Widget"
+        Icon="/Assets/icon.ico"
+        Width="360"
+        SizeToContent="Height"
+        WindowDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Topmost="True"
+        WindowStartupLocation="Manual">
+
+    <!--
+        Janelinha do ícone da bandeja: no topo, uma aba por conta com o maior uso; embaixo, cada limite da
+        conta escolhida numa barra (lê melhor que anéis numa janela estreita e com texto); no rodapé, a hora
+        da última leitura e os botões. Abre junto ao cursor e fecha ao perder o foco ou com Esc.
+    -->
+    <Window.Styles>
+        <!-- Abas: uma linha, mesma largura, sem o visual padrão da lista -->
+        <Style Selector="ListBox#Tabs">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBox#Tabs ListBoxItem">
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ListBox#Tabs ListBoxItem:nth-last-child(1)">
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="ListBox#Tabs ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="ListBox#Tabs ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource HoverFill}" />
+        </Style>
+        <Style Selector="ListBox#Tabs ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+        </Style>
+        <Style Selector="ListBox#Tabs ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+        </Style>
+
+        <!-- Etiqueta do plano: só contorno, como no widget -->
+        <Style Selector="Border.tag">
+            <Setter Property="BorderBrush" Value="{DynamicResource TagBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Barra de cada limite: fina, com pontas arredondadas -->
+        <Style Selector="ProgressBar.usage">
+            <Setter Property="Height" Value="6" />
+            <Setter Property="MinHeight" Value="6" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Background" Value="{DynamicResource RingTrack}" />
+            <Setter Property="Minimum" Value="0" />
+            <Setter Property="Maximum" Value="100" />
+        </Style>
+        <Style Selector="ProgressBar.usage /template/ Border#PART_Indicator">
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+
+        <Style Selector="Grid.panelButtons Button.icon">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+        </Style>
+    </Window.Styles>
+
+    <!-- A margem dá espaço para a sombra nos temas Escuro e Claro (o código zera no Vidro). -->
+    <Panel Name="PanelHost" Margin="10">
+        <Border Name="PanelView" CornerRadius="14" Background="{DynamicResource PanelBackground}"
+                BorderBrush="{DynamicResource PanelBorder}" BorderThickness="1" Padding="12">
+            <StackPanel>
+                <TextBlock IsVisible="{Binding !Widget.HasProviders}" Foreground="{DynamicResource TextDim}" FontSize="11" TextWrapping="Wrap"
+                           Margin="4" Text="Nenhuma conta para mostrar. Escolha as contas nas configurações." />
+
+                <!-- Abas: ponto colorido e nome; embaixo, o maior uso da conta -->
+                <ListBox Name="Tabs" ItemsSource="{Binding Widget.Providers}" SelectedItem="{Binding SelectedCard}"
+                         IsVisible="{Binding Widget.HasProviders}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ProviderCardViewModel">
+                            <StackPanel AutomationProperties.Name="{Binding Name}">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Ellipse Width="7" Height="7" Margin="0,0,6,0" VerticalAlignment="Center"
+                                             Fill="{Binding AccentColor, Converter={StaticResource HexToBrush}}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{DynamicResource TextMain}" FontSize="11"
+                                               FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                </Grid>
+                                <TextBlock Text="{Binding PeakText}" Foreground="{DynamicResource TextDim}" FontSize="11" Margin="13,3,0,0" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Conta escolhida -->
+                <StackPanel IsVisible="{Binding HasSelection}" Margin="4,14,4,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding SelectedCard.Name}" Foreground="{DynamicResource TextMain}" FontSize="13"
+                                   FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <Border Classes="tag" Margin="8,0,0,0" IsVisible="{Binding SelectedCard.HasPlan, FallbackValue=False}">
+                            <TextBlock Text="{Binding SelectedCard.Plan}" Foreground="{DynamicResource TextDim}" FontSize="9.5" />
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding SelectedCard.ErrorMessage}" IsVisible="{Binding SelectedCard.HasError, FallbackValue=False}"
+                               Foreground="{DynamicResource Danger}" FontSize="10.5" TextWrapping="Wrap" Margin="0,10,0,0" />
+
+                    <!-- Sem login: a mensagem e o botão de entrar -->
+                    <StackPanel IsVisible="{Binding SelectedCard.NeedsSignIn, FallbackValue=False}" Margin="0,10,0,0">
+                        <TextBlock Text="{Binding SelectedCard.SignInMessage}" Foreground="{DynamicResource TextDim}"
+                                   FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,8" />
+                        <Button Classes="pill" Content="{Binding SelectedCard.SignInButtonText}" HorizontalAlignment="Left"
+                                IsVisible="{Binding SelectedCard.ShowSignInButton, FallbackValue=False}" Command="{Binding SelectedCard.SignInCommand}" />
+                        <Button Classes="pill secondary" Content="Cancelar" HorizontalAlignment="Left"
+                                IsVisible="{Binding SelectedCard.IsSigningIn, FallbackValue=False}" Command="{Binding SelectedCard.CancelSignInCommand}" />
+                    </StackPanel>
+
+                    <!-- Um limite por linha: nome e percentual, a barra e quando renova -->
+                    <ItemsControl ItemsSource="{Binding SelectedCard.Windows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:UsageWindowViewModel">
+                                <StackPanel Margin="0,12,0,0">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="{Binding Label}" Foreground="{DynamicResource TextMain}" FontSize="11.5"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" Text="{Binding PercentText}" Foreground="{DynamicResource TextMain}"
+                                                   FontSize="11.5" FontWeight="SemiBold" Margin="8,0,0,0" />
+                                    </Grid>
+                                    <ProgressBar Classes="usage" Margin="0,6,0,0" Value="{Binding Percent}"
+                                                 Foreground="{Binding RingColor, Converter={StaticResource HexToBrush}}"
+                                                 AutomationProperties.Name="{Binding ToolTip}" />
+                                    <TextBlock Text="{Binding ResetText}" Foreground="{DynamicResource TextDim}" FontSize="10"
+                                               Margin="0,5,0,0" IsVisible="{Binding ResetText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Rodapé: última leitura e botões -->
+                <Border Height="1" Background="{DynamicResource Hairline}" Margin="0,14,0,8" />
+                <Grid Classes="panelButtons" ColumnDefinitions="*,Auto,Auto" Margin="4,0,0,0">
+                    <TextBlock Text="{Binding Widget.Subtitle}" Foreground="{DynamicResource TextDim}" FontSize="10"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <Button Grid.Column="1" Classes="icon" AutomationProperties.Name="Atualizar agora" Command="{Binding Widget.RefreshCommand}">
+                        <PathIcon Data="{StaticResource IconRefresh}" />
+                    </Button>
+                    <Button Grid.Column="2" Name="SettingsButton" Classes="icon" Margin="2,0,0,0" AutomationProperties.Name="Configurações"
+                            Click="SettingsButton_Click">
+                        <PathIcon Data="{StaticResource IconSettings}" />
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Panel>
+</Window>

@@ -51,6 +51,7 @@ public sealed partial class WidgetViewModel : ObservableObject
 
     private DateTimeOffset? _lastRefresh;
     private CancellationTokenSource? _refreshCts;
+    private bool _settingsOpen;
 
     [ObservableProperty]
     private string _subtitle = "";
@@ -74,6 +75,16 @@ public sealed partial class WidgetViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsLarge))]
     private WidgetSize _size;
 
+    /// <summary>Widget ou bandeja. Quem monta as janelas escuta e troca uma pela outra.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowsWidget))]
+    [NotifyPropertyChangedFor(nameof(ShowsTray))]
+    private DisplayMode _mode;
+
+    /// <summary>Dica do ícone da bandeja: uma linha por conta visível ("Claude: 42%").</summary>
+    [ObservableProperty]
+    private string _trayToolTip = ViewModels.TrayToolTip.Empty;
+
     public WidgetViewModel(
         AppSettings settings,
         IEnumerable<IUsageProvider> providers,
@@ -95,12 +106,22 @@ public sealed partial class WidgetViewModel : ObservableObject
         _isPinned = settings.Pinned;
         _theme = settings.Theme;
         _size = settings.Size;
+        _mode = settings.Mode;
         foreach (var provider in providers)
         {
             var card = new ProviderCardViewModel(provider, RefreshAfterSignInAsync);
 
-            // Qualquer mudança nos anéis (leitura, erro, sair da conta) pode mudar as colunas.
-            card.Windows.CollectionChanged += (_, _) => UpdateRingColumns();
+            // Qualquer mudança nos anéis (leitura, erro, sair da conta) pode mudar as colunas e a dica da bandeja.
+            card.Windows.CollectionChanged += (_, _) =>
+            {
+                UpdateRingColumns();
+                UpdateTrayToolTip();
+            };
+            card.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(ProviderCardViewModel.NeedsSignIn))
+                    UpdateTrayToolTip();
+            };
             _allCards.Add(card);
         }
         ShowVisibleProviders();
@@ -121,6 +142,10 @@ public sealed partial class WidgetViewModel : ObservableObject
     public bool IsSmall => Size == WidgetSize.Small;
 
     public bool IsLarge => Size == WidgetSize.Large;
+
+    public bool ShowsWidget => Mode == DisplayMode.Widget;
+
+    public bool ShowsTray => Mode == DisplayMode.Tray;
 
     public double? SavedLeft => _settings.Left;
 
@@ -280,7 +305,20 @@ public sealed partial class WidgetViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenSettingsAsync()
     {
-        var saved = await _dialogs.ShowSettingsAsync(_settings, [.. _allCards.Select(c => c.Provider)]);
+        // Um segundo pedido (clique duplo, menu e botão) não abre outra tela de configurações.
+        if (_settingsOpen)
+            return;
+
+        bool saved;
+        _settingsOpen = true;
+        try
+        {
+            saved = await _dialogs.ShowSettingsAsync(_settings, [.. _allCards.Select(c => c.Provider)]);
+        }
+        finally
+        {
+            _settingsOpen = false;
+        }
 
         // A tela mostra o tema como prévia; ao fechar, vale o tema salvo (o novo, se salvou).
         _themes.Apply(_settings.Theme);
@@ -289,6 +327,7 @@ public sealed partial class WidgetViewModel : ObservableObject
 
         Theme = _settings.Theme;
         Size = _settings.Size;
+        Mode = _settings.Mode;
         ShowVisibleProviders();
         await RefreshAsync();
     }
@@ -301,7 +340,10 @@ public sealed partial class WidgetViewModel : ObservableObject
             Providers.Add(card);
         OnPropertyChanged(nameof(HasProviders));
         UpdateRingColumns();
+        UpdateTrayToolTip();
     }
+
+    private void UpdateTrayToolTip() => TrayToolTip = ViewModels.TrayToolTip.For(Providers);
 
     /// <summary>Todas as contas usam as colunas da que tem mais anéis, para ficarem alinhadas.</summary>
     private void UpdateRingColumns()

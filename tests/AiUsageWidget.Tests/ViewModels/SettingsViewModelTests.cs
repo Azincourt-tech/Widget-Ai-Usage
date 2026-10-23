@@ -111,4 +111,29 @@ public class SettingsViewModelTests
         Assert.Equal(WidgetSize.Medium, _settings.Size);
         Assert.Null(_store.Saved);
     }
+
+    [Fact]
+    public void Modo_AbreComOAtualESalva()
+    {
+        _settings.Mode = DisplayMode.Tray;
+        var vm = Create();
+        Assert.Equal(DisplayMode.Tray, vm.Mode);
+
+        vm.Mode = DisplayMode.Widget;
+        vm.SaveCommand.Execute(null);
+
+        Assert.Equal(DisplayMode.Widget, _settings.Mode);
+        Assert.Equal(DisplayMode.Widget, _store.Saved!.Mode);
+    }
+
+    [Fact]
+    public void Modo_Cancelar_NaoMuda()
+    {
+        var vm = Create();
+
+        vm.Mode = DisplayMode.Tray;
+        vm.CancelCommand.Execute(null);
+
+        Assert.Equal(DisplayMode.Widget, _settings.Mode);
+    }
 }

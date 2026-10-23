@@ -68,6 +68,19 @@
             <TextBlock Classes="section" Text="APARÊNCIA" />
             <Border Classes="group">
                 <StackPanel>
+                    <!-- Widget na área de trabalho ou ícone na bandeja (um ou outro) -->
+                    <Grid Classes="row">
+                        <TextBlock Classes="label" Text="Mostrar como" />
+                        <Border Classes="segmentTrack">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Mode" Content="Widget"
+                                             IsChecked="{Binding Mode, Converter={StaticResource ValueEquals}, ConverterParameter=Widget}" />
+                                <RadioButton Theme="{StaticResource SegmentTheme}" GroupName="Mode" Content="Bandeja"
+                                             IsChecked="{Binding Mode, Converter={StaticResource ValueEquals}, ConverterParameter=Tray}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <Border Classes="divider" />
                     <Grid Classes="row">
                         <TextBlock Classes="label" Text="Tema" />
                         <Border Classes="segmentTrack">
