@@ -6,6 +6,38 @@ Só o que ainda está pendente. O que já está pronto fica descrito no [README]
 
 - **Observar "muitas consultas" (429):** se aparecer com o uso, aumentar o intervalo ou a pausa.
 
+## Modo bandeja (decidido em outubro de 2026)
+
+Inspirado no [ai-usagebar](https://github.com/akitaonrails/ai-usagebar) do Akita. O usuário escolhe nas configurações um **Modo**: "Widget na área de trabalho" (como hoje), "Ícone na bandeja" ou os dois. O Core (`WidgetViewModel`, provedores, avisos) é o mesmo; muda só a interface.
+
+- **Ícone na área de notificação** com o `TrayIcon` do Avalonia. O ícone é um mini anel desenhado em 16 px com o maior uso entre as contas. A dica ao passar o mouse resume todas, por exemplo "Claude 42% · Codex 26%".
+- **Clique esquerdo** abre e fecha uma janelinha (popover). **Clique direito** abre o menu de hoje: Atualizar agora, Configurações e Sair.
+- **Posição:** o Avalonia não informa onde fica o ícone, então a janelinha abre perto do cursor (`GetCursorPos`), dentro da área livre do monitor, sem a barra de tarefas. É o mesmo jeito do ai-usagebar.
+- **Fecha sozinha** ao clicar fora, ao clicar de novo no ícone ou com Esc. Cuidado (visto no ai-usagebar): o Windows às vezes ativa a barra de tarefas sozinho quando o ícone é atualizado. Isso não pode fechar a janelinha.
+- **Visual (escolha deixada para o que ficar melhor):** a proposta é seguir o print que o usuário trouxe.
+  - No topo, uma aba por conta com o ponto colorido e o maior %.
+  - Embaixo, os limites da conta escolhida em **barras horizontais**: nome, %, "Renova em 1h 38m" e a linha "Atualizado há 2 min".
+  - As barras leem melhor que os anéis numa janela estreita e com texto. Os anéis continuam no widget e no ícone.
+  - Respeita os três temas. Confirmar na tela antes de fechar o visual.
+- **Atalho global (opcional)** para abrir e fechar a janelinha de qualquer lugar, com `RegisterHotKey`.
+
+## Aproveitar os logins dos CLIs (decidido em outubro de 2026)
+
+O usuário decidiu fazer **como o ai-usagebar**: usar o login que já existe no PC (Claude Code, Codex CLI, Antigravity) e renovar o token quando vencer, gravando o novo no próprio arquivo do CLI. **Isso substitui a decisão de "só login próprio" do CLAUDE.md.** Ao implementar, atualizar o CLAUDE.md, o README (privacidade: o widget lê e atualiza o login dos CLIs) e o DESENVOLVIMENTO.md.
+
+- **Ordem:** primeiro o login do CLI. Sem ele, o login próprio de hoje continua valendo (para quem não tem o CLI instalado).
+- **Onde está cada login** (formato conferido só pelos nomes dos campos):
+  - **Claude:** `%USERPROFILE%\.claude\.credentials.json`, objeto `claudeAiOauth` com `accessToken`, `refreshToken`, `expiresAt` (milissegundos), `scopes`, `subscriptionType` e `rateLimitTier`. Há outros campos no arquivo (`organizationUuid`, `mcpOAuth`) que precisam ser preservados.
+  - **Codex:** `%USERPROFILE%\.codex\auth.json`, com `auth_mode`, `OPENAI_API_KEY`, `last_refresh` e `tokens` (`id_token`, `access_token`, `refresh_token`, `account_id`).
+  - **Antigravity:** credencial genérica `gemini:antigravity` no Gerenciador de Credenciais. É gravada pelo `go-keyring` e pode vir com o prefixo `go-keyring-base64:`. **Só leitura:** o Google costuma manter o refresh token, então o widget renova em memória com o próprio secret e nunca grava nessa credencial.
+- **Renovação nos arquivos do Claude e do Codex:** renovar com o refresh token do CLI e gravar de volta de forma atômica (arquivo temporário e troca), mantendo todos os outros campos.
+  - O refresh token troca a cada renovação. Se o CLI e o widget renovarem ao mesmo tempo, um deles fica com um token inválido.
+  - Proteções além das do ai-usagebar: ler o arquivo de novo logo antes de renovar (o CLI pode já ter renovado). Se a renovação for recusada, ler o arquivo de novo antes de desistir.
+- **Nunca apagar nem esvaziar o arquivo do CLI.** "Sair" e o login vencido só fazem o widget parar de usar aquele login e voltar ao login próprio.
+- **Detecção sem rede:** na primeira vez, procurar esses logins e mostrar a conta já lida, sem pedir "Entrar". O menu do clique direito ganha "Procurar logins".
+- **O card diz a origem do login**, por exemplo "via Claude Code".
+- **Testes** com arquivos fictícios: leitura (`ParseXxx` estático), gravação de volta preservando os outros campos, não apagar o arquivo e voltar ao login próprio.
+
 ## Idiomas (inglês e espanhol)
 
 Hoje tudo está em português. Para traduzir para inglês e espanhol:
@@ -33,5 +65,13 @@ O macOS não está nos planos.
 
 ## Em avaliação
 
-- **Ícone na bandeja com popover.** O Avalonia não informa a posição do ícone; a janela teria que abrir perto do cursor. Decidir depois de usar o widget flutuante por um tempo.
-- **Chaves de API (pagamento por uso):** mostrar o gasto do mês pelas APIs oficiais de uso e custo da Anthropic e da OpenAI.
+- **Chaves de API (pagamento por uso):** mostrar o gasto do mês pelas APIs oficiais de uso e custo da Anthropic e da OpenAI. Pela mesma via, outros provedores que o ai-usagebar cobre por chave: Z.AI, OpenRouter e Kimi.
+
+Outras ideias vistas no ai-usagebar, ainda sem decisão:
+
+- **Ritmo:** um tracinho no anel ou na barra marca onde o uso estaria se fosse gasto por igual até renovar. Uma nota mostra "Acaba em 1d 9h" quando o ritmo estoura o limite antes da renovação, ou "Sobra ~40% ao renovar". É cálculo puro no Core, fácil de testar.
+- **Usado ou restante:** clicar no % troca entre "80% usado" e "20% restante".
+- **"Renova em 1h 38m" ou a hora exata**, como opção nas configurações.
+- **Aviso de nova versão** pelas releases do GitHub, conferindo o `.sha256`. Só avisa, sem instalar sozinho.
+- **Resets acumulados do Claude** ("Rate Limit Resets: 1 disponível"): conferir se a resposta de uso traz isso e mostrar no card.
+- **Antigravity com janela de 5 h:** segundo o ai-usagebar, cada grupo tem uma janela de 5 h e uma semanal. Na conta do usuário só veio a semanal; talvez dependa do plano.
