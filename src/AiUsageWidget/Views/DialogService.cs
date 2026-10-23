@@ -14,9 +14,26 @@ public sealed class DialogService(ISettingsStore store, IStartupRegistration sta
     public async Task<bool> ShowSettingsAsync(AppSettings settings, IReadOnlyList<IUsageProvider> providers)
     {
         var viewModel = new SettingsViewModel(settings, providers, store, startup, themes);
-        var window = new SettingsWindow(viewModel);
 
+        // Antes de criar a janela: este aviso precisa chegar antes do "fechou" da própria janela.
+        var result = new TaskCompletionSource<bool>();
+        viewModel.CloseRequested += (_, saved) => result.TrySetResult(saved);
+
+        var window = new SettingsWindow(viewModel);
+        window.Closed += (_, _) => result.TrySetResult(false);
+
+        // Com o widget na tela, as configurações ficam presas a ele; no modo bandeja, abrem sozinhas.
         var owner = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-        return owner is not null && await window.ShowDialog<bool>(owner);
+        if (owner is { IsVisible: true })
+        {
+            await window.ShowDialog(owner);
+        }
+        else
+        {
+            window.Show();
+            window.Activate();
+        }
+
+        return await result.Task;
     }
 }

@@ -13,6 +13,10 @@ public sealed class AppSettings
     [JsonConverter(typeof(JsonStringEnumConverter<WidgetSize>))]
     public WidgetSize Size { get; set; } = WidgetSize.Medium;
 
+    /// <summary>Widget na área de trabalho ou ícone na bandeja (padrão: widget).</summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<DisplayMode>))]
+    public DisplayMode Mode { get; set; } = DisplayMode.Widget;
+
     /// <summary>Contas escondidas do widget (valores de <see cref="ProviderIds"/>). Vazio: mostra todas.</summary>
     public string[] HiddenProviders { get; set; } = [];
 
@@ -25,6 +29,14 @@ public sealed class AppSettings
 
     public bool IsVisible(string providerId) => !HiddenProviders.Contains(providerId);
 
+    /// <summary>O widget flutuante aparece neste modo.</summary>
+    [JsonIgnore]
+    public bool ShowsWidget => Mode == DisplayMode.Widget;
+
+    /// <summary>O ícone na bandeja aparece neste modo.</summary>
+    [JsonIgnore]
+    public bool ShowsTray => Mode == DisplayMode.Tray;
+
     /// <summary>
     /// Corrige qualquer valor fora do esperado (arquivo editado à mão, versão antiga, etc.).
     /// </summary>
@@ -33,6 +45,8 @@ public sealed class AppSettings
         Theme = ThemeNames.Normalize(Theme);
         if (!Enum.IsDefined(Size))
             Size = WidgetSize.Medium;
+        if (!Enum.IsDefined(Mode))
+            Mode = DisplayMode.Widget;
         HiddenProviders = [.. (HiddenProviders ?? []).Where(ProviderIds.All.Contains).Distinct()];
         if (Left is double left && !double.IsFinite(left))
             Left = null;

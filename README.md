@@ -32,6 +32,7 @@ Um widget de área de trabalho que mostra quanto você ainda pode usar das suas 
 - ⏱️ **Quando renova:** cada anel mostra quanto falta para o limite voltar.
 - 🔔 **Avisos:** notificação do Windows quando um limite passa de 80% e de 95%.
 - 🎨 **Do seu jeito:** temas Vidro, Escuro e Claro, em três tamanhos.
+- 📌 **Widget ou bandeja:** flutuando na área de trabalho ou como um ícone ao lado do relógio, que abre os limites com um clique.
 - 🔒 **Login oficial:** você entra na página de cada serviço, e o acesso fica no cofre do Windows. Nenhum dado sai do seu computador.
 - 📦 **Sem instalação:** um arquivo só, é baixar e abrir.
 
@@ -44,6 +45,10 @@ Um widget de área de trabalho que mostra quanto você ainda pode usar das suas 
 | Pequeno | Grande | Configurações |
 |---|---|---|
 | ![Tamanho pequeno](docs/images/widget-small.png) | ![Tamanho grande](docs/images/widget-large.png) | ![Configurações](docs/images/settings.png) |
+
+| No modo bandeja |
+|---|
+| ![Janelinha do ícone da bandeja](docs/images/tray-panel.png) |
 
 > Em desenvolvimento. Funciona no Windows; o Linux vem em seguida.
 
@@ -75,10 +80,20 @@ Não usa alguma dessas IAs? Esconda a conta nas configurações.
 - **Arraste** o widget por qualquer parte. Ele lembra onde ficou.
 - **Sair de uma conta:** passe o mouse sobre ela e clique no ícone de sair, ao lado do plano.
 
+### No modo bandeja
+
+Em **Configurações > Mostrar como**, escolha **Bandeja** para trocar o widget por um ícone na área de notificação, ao lado do relógio.
+
+- **Passe o mouse** sobre o ícone para ver o uso de cada conta.
+- **Clique** no ícone para abrir uma janelinha com uma aba por conta: cada limite aparece numa barra, com quando renova. Ela fecha ao clicar fora, ao clicar de novo no ícone ou com **Esc**.
+- **Clique com o botão direito** no ícone para atualizar agora, abrir as configurações ou **sair**.
+- No Windows 11, ícones novos ficam escondidos na seta **^** da área de notificação. Para deixar o ícone sempre à vista, arraste-o da seta para a barra (ou ligue-o em **Configurações do Windows > Personalização > Barra de tarefas > Outros ícones da bandeja do sistema**).
+
 ## Configurações
 
+- **Mostrar como:** **Widget** (na área de trabalho) ou **Bandeja** (um ícone ao lado do relógio). Vale na hora, sem reiniciar.
 - **Tema:** Vidro (transparente com desfoque), Escuro ou Claro.
-- **Tamanho:** pequeno, médio ou grande.
+- **Tamanho:** pequeno, médio ou grande (do widget).
 - **Contas no widget:** escolha quais aparecem. As escondidas não são consultadas.
 - **Avisar em 80% e 95%:** liga ou desliga as notificações.
 - **Iniciar com o Windows:** abre o widget sozinho quando você entra no Windows.
@@ -94,6 +109,9 @@ Não. É um projeto independente que usa os mesmos endereços que os aplicativos
 **Por que não aparece o limite diário do Antigravity?**
 O Google só informa limites semanais nos planos que testamos. O widget mostra o que o serviço informar.
 
+**Escolhi Bandeja e o ícone não aparece.**
+No Windows 11, ícones novos ficam escondidos: clique na seta **^** ao lado do relógio. Veja acima como deixar o ícone sempre à vista.
+
 **O limite do Opus não aparece no Claude.**
 Ele só aparece quando o seu plano tem um limite separado para o Opus. Nos outros, o uso do Opus entra no limite semanal geral.
 
@@ -103,7 +121,7 @@ Tudo fica no seu computador. O widget não tem servidor próprio e nunca vê a s
 
 ## Como remover
 
-1. Nas configurações, desligue **Iniciar com o Windows** e feche o widget.
+1. Nas configurações, desligue **Iniciar com o Windows** e feche o widget (no modo bandeja: clique com o botão direito no ícone e em **Sair**).
 2. Apague o arquivo `.exe`.
 3. Se quiser apagar também o que ficou guardado:
    - as configurações, na pasta `%APPDATA%\AiUsageWidget`;

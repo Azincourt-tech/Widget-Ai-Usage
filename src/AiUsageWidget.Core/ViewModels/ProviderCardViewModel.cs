@@ -54,7 +54,18 @@ public sealed partial class ProviderCardViewModel : ObservableObject
         Provider = provider;
         _refresh = refresh;
         AccentColor = ProviderIds.AccentFor(provider.Id);
+        Windows.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(PeakPercent));
+            OnPropertyChanged(nameof(PeakText));
+        };
     }
+
+    /// <summary>O maior percentual usado entre os limites da conta, ou nulo se ainda não há leitura.</summary>
+    public double? PeakPercent => Windows.Count > 0 ? Windows.Max(w => w.Percent) : null;
+
+    /// <summary>Texto da aba da bandeja e da dica do ícone: "42%", ou "—" sem leitura.</summary>
+    public string PeakText => PeakPercent is double peak ? UsageFormatter.PercentText(peak) : "—";
 
     public IUsageProvider Provider { get; }
 

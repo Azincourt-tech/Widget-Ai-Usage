@@ -29,6 +29,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     private WidgetSize _size;
 
     [ObservableProperty]
+    private DisplayMode _mode;
+
+    [ObservableProperty]
     private bool _startWithWindows;
 
     [ObservableProperty]
@@ -52,6 +55,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
         _theme = ThemeNames.Normalize(settings.Theme);
         _size = settings.Size;
+        _mode = settings.Mode;
         _startWithWindows = startup.IsEnabled;
         _notifications = settings.Notifications;
         foreach (var provider in providers)
@@ -86,6 +90,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         var updated = _settings.Clone();
         updated.Theme = Theme;
         updated.Size = Size;
+        updated.Mode = Mode;
         updated.Notifications = Notifications;
         updated.HiddenProviders = [.. Providers.Where(p => !p.IsVisible).Select(p => p.Id)];
         updated.Normalize();
@@ -114,6 +119,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         target.Theme = source.Theme;
         target.Size = source.Size;
+        target.Mode = source.Mode;
         target.Notifications = source.Notifications;
         target.HiddenProviders = source.HiddenProviders;
     }

@@ -61,6 +61,51 @@ public sealed class SettingsTests : IDisposable
         Assert.True(new SettingsStore(ConfigPath).Load().Notifications);
     }
 
+    [Fact]
+    public void Normalize_ModoInvalido_VoltaAoWidget() =>
+        Assert.Equal(DisplayMode.Widget, new AppSettings { Mode = (DisplayMode)42 }.Normalize().Mode);
+
+    [Theory]
+    [InlineData(DisplayMode.Widget, true, false)]
+    [InlineData(DisplayMode.Tray, false, true)]
+    public void Modo_DizOQueAparece(DisplayMode mode, bool widget, bool tray)
+    {
+        var settings = new AppSettings { Mode = mode };
+
+        Assert.Equal(widget, settings.ShowsWidget);
+        Assert.Equal(tray, settings.ShowsTray);
+    }
+
+    [Fact]
+    public void Store_GravaModoComoTextoELe()
+    {
+        var store = new SettingsStore(ConfigPath);
+        store.Save(new AppSettings { Mode = DisplayMode.Tray });
+
+        var json = File.ReadAllText(ConfigPath);
+        Assert.Contains("\"Tray\"", json);
+        Assert.DoesNotContain("ShowsTray", json);
+        Assert.Equal(DisplayMode.Tray, store.Load().Mode);
+    }
+
+    [Fact]
+    public void Store_ArquivoAntigoSemModo_FicaNoWidget()
+    {
+        Directory.CreateDirectory(_folder);
+        File.WriteAllText(ConfigPath, """{"Theme": "Dark"}""");
+
+        Assert.Equal(DisplayMode.Widget, new SettingsStore(ConfigPath).Load().Mode);
+    }
+
+    [Theory]
+    [InlineData("--mode=tray", DisplayMode.Tray)]
+    [InlineData("--mode=Widget", DisplayMode.Widget)]
+    [InlineData("--mode=Both", null)]
+    [InlineData("--mode=barra", null)]
+    [InlineData("--mode=5", null)]
+    public void StartupOptions_LeOModo(string arg, DisplayMode? expected) =>
+        Assert.Equal(expected, StartupOptions.Parse(["--demo", arg]).Mode);
+
     [Theory]
     [InlineData("--size=small", WidgetSize.Small)]
     [InlineData("--size=Large", WidgetSize.Large)]

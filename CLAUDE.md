@@ -19,6 +19,8 @@ Segue o mesmo padrão do projeto irmão `C:\Dev\SteamWishlistWidget` (Core separ
   - **Para o Vidro de verdade (imagens do README):** `SetForegroundWindow` com esse handle e depois `CopyFromScreen`.
   - **Configurações:** abrem pelo botão "Configurações" via UI Automation (`InvokePattern`) e aparecem como **filha** da janela do widget na árvore (busque nos filhos dela, não na raiz).
   - **Botões do widget:** só aparecem com o mouse em cima. Evite mover o cursor; se for inevitável, devolva-o à posição original.
+  - **Modo bandeja:** abra a janelinha invocando o ícone pela UI Automation (`NotifyItemIcon`, nome = a dica "Claude: ..."; no Windows 11 ele fica na área de ícones ocultos, botão `SystemTrayIcon` "Mostrar ícones ocultos"). Ela abre junto ao cursor do usuário e fecha ao perder o foco: capture **sem** `SetForegroundWindow`.
+  - **Monitor com escala (o segundo monitor do usuário é 175%):** o PowerShell não é ciente do DPI e recebe coordenadas virtualizadas (captura cortada ou do lugar errado). Capture com um processo ciente do DPI (ex.: um `.cs` rodado com `dotnet run` que chama `SetProcessDpiAwarenessContext(-4)` antes de tudo).
 - Se precisar conferir algo com a conta real do usuário, apague a captura logo depois (ela tem os percentuais reais).
 
 ## Comandos
@@ -26,7 +28,7 @@ Segue o mesmo padrão do projeto irmão `C:\Dev\SteamWishlistWidget` (Core separ
 ```bash
 dotnet build AiUsageWidget.sln            # precisa terminar com 0 avisos (avisos são erro)
 dotnet test AiUsageWidget.sln             # rodam em qualquer sistema
-dotnet run --project src/AiUsageWidget -- --demo --theme=Dark --size=Medium   # contas fictícias (Dark|Light|Glass, Small|Medium|Large)
+dotnet run --project src/AiUsageWidget -- --demo --theme=Dark --size=Medium   # contas fictícias (Dark|Light|Glass, Small|Medium|Large; --mode=Widget|Tray)
 ```
 
 No Windows, a interface compila com o alvo `net10.0-windows10.0.19041.0` (por causa das notificações nativas); no Linux, com `net10.0`. O `.exe` fica em `src/AiUsageWidget/bin/Debug/net10.0-windows10.0.19041.0/`. O Core e os testes continuam em `net10.0`.
@@ -38,7 +40,7 @@ O widget só abre uma cópia por vez (mutex). Antes de recompilar, feche o widge
 | Pasta | O que é | Regras |
 |---|---|---|
 | `src/AiUsageWidget.Core` | Models, ViewModels, Services (provedores), Constants. `net10.0` puro | Nada de Avalonia nem API exclusiva de um sistema |
-| `src/AiUsageWidget` | Interface Avalonia, temas, estilos, `Controls/UsageRing.cs` e `Platform/` | Só comportamento visual nas Views |
+| `src/AiUsageWidget` | Interface Avalonia, temas, estilos, `Controls/UsageRing.cs`, `Tray/` (ícone da bandeja) e `Platform/` | Só comportamento visual nas Views |
 | `tests/AiUsageWidget.Tests` | xUnit, referencia só o Core | Fakes em `Fakes/Fakes.cs` (relógio fixo em UTC-3) |
 
 ## Como os limites são lidos
@@ -105,6 +107,12 @@ O Antigravity (IDE e CLI `agy`) usa login Google e **uma cota só, por conta**: 
 - **Tamanhos (`WidgetSize`):** a largura do painel fica no código (`MainWindow.PanelWidthFor`: 330/500/600), porque o posicionamento inicial precisa dela antes dos estilos serem aplicados. Anéis, fontes e a largura da coluna da esquerda ficam nos estilos do `MainWindow.axaml`, pelas classes `small`/`large` no `PanelView` (médio é o padrão). No pequeno, só o rótulo curto ("5h", "7d"); quando renova fica na dica do anel. Sem login, o botão diz só "Entrar" (o nome da conta já está à esquerda), e no pequeno a mensagem some, ficando só o botão. Nomes longos ("Antigravity") são cortados com "..." na coluna da esquerda. Ao mudar de tamanho do lado direito da tela, a borda direita fica parada.
 - **Configurações (`SettingsWindow` + `SettingsViewModel`):** tema (prévia ao vivo; quem abriu reaplica o tema salvo ao fechar), tamanho, contas visíveis (pelo menos uma), avisar em 80% e 95% e iniciar com o Windows (chave `Run` do usuário, `WindowsStartupRegistration`). Contas escondidas não são consultadas. A janela arrasta por qualquer parte (borda `Root`), menos sobre `Button`/`ToggleButton` (botões, interruptores e opções do segmentado).
 - **Desenho por software (decisão do usuário, outubro de 2026):** o `Program.cs` usa `Win32RenderingMode.Software`. Com a GPU (padrão do Avalonia) o widget gastava ~20 MB de RAM e ~70 threads a mais, sem ganho visual. Não volte para a GPU sem medir (números e como medir em [docs/DESENVOLVIMENTO.md](docs/DESENVOLVIMENTO.md#consumo-de-memória)).
+  - **Cuidado:** com software o Avalonia **não** dá o `AcrylicBlur` (fica `Transparent`, sem desfoque). O desfoque do Vidro vem do `Platform/Windows/WindowsBlur.cs` (accent policy do DWM), chamado pelo `Views/PanelChrome.cs`. Para conferir o Vidro, olhe `ActualTransparencyLevel`/a captura real: o fundo atrás tem de sair desfocado, não só transparente.
+- **Widget ou bandeja (decisão do usuário, outubro de 2026: um ou outro, sem "os dois"):** "Mostrar como" nas configurações (`AppSettings.Mode`: `Widget` padrão ou `Tray`), vale na hora. O `App` cria o `WidgetViewModel` uma vez (leituras, relógio e avisos ficam nele, `ShutdownMode.OnExplicitShutdown`) e troca o `MainWindow` pelo `TrayController` e vice-versa; ao ir para a bandeja, o widget é fechado (libera memória). "Fechar" (widget) e "Sair" (menu do ícone) encerram o app; fechar o widget por fora (Alt+F4) também.
+  - **Ícone (escolha do usuário):** o `icon.ico` do widget, não um desenho dinâmico. A dica (`TrayToolTip.For`) tem uma linha por conta visível com o maior uso ("Claude: 42%", "Codex: entrar", "—" sem leitura), até 127 caracteres. Menu: Atualizar agora, Configurações..., Sair.
+  - **Janelinha (`TrayPanelWindow` + `TrayPanelViewModel`):** 360 de largura, abas por conta (ponto, nome e maior %; a escolhida continua ao salvar as configurações) e os limites da conta em barras (nome, %, barra na cor do anel, "renova em..."), rodapé com "Atualizado..." e os botões atualizar e configurações. Abre junto ao cursor (`TrayPanelPlacement`, no Core e testado), **posicionada só depois de mostrar** (escondida, a janela não se ajusta à escala de outro monitor). Fecha ao perder o foco (menos nos primeiros 300 ms), com Esc ou num novo clique no ícone (folga de 400 ms para o clique que a fechou não a reabrir).
+  - As configurações abrem presas ao widget (`ShowDialog`) quando ele está na tela; no modo bandeja, sozinhas. `OpenSettings` ignora um segundo pedido enquanto a tela está aberta.
+  - Atalho global para abrir a janelinha ficou para depois (ROADMAP).
 
 ## Regras do projeto
 
@@ -125,7 +133,7 @@ O Antigravity (IDE e CLI `agy`) usa login Google e **uma cota só, por conta**: 
 
 ## Estado atual (outubro de 2026)
 
-- Pronto: modo demonstração, três temas, três tamanhos, tela de configurações, iniciar com o Windows, avisos de 80% e 95%, anéis animados, atualização periódica, fixar, arrastar e lembrar posição.
+- Pronto: modo demonstração, três temas, três tamanhos, tela de configurações, iniciar com o Windows, avisos de 80% e 95%, anéis animados, atualização periódica, fixar, arrastar e lembrar posição, e o modo bandeja (ícone com janelinha, no lugar do widget).
 - Conectores do Claude, Codex e Antigravity, todos testados com conta real, com login próprio e cofre do Windows. O Gemini CLI foi removido (substituído pelo Antigravity CLI).
 - **Windows primeiro, depois Linux.** O Linux é testado por um amigo do usuário: mudanças para Linux precisam de instruções claras de como testar (comandos, o que conferir). Falta no Linux: cofre com libsecret (`secret-tool`), abrir o navegador com `xdg-open` e conferir Vidro/cantos (ver ROADMAP). Hoje `PlatformServices` lança `PlatformNotSupportedException` fora do Windows (exceto no `--demo`).
 - **Não escreva código específico de macOS** (Keychain, `open`, `.app`, etc.).

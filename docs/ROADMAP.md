@@ -10,25 +10,8 @@ Só o que ainda está pendente. O que já está pronto fica descrito no [README]
 
 Feito em outubro de 2026: desenho por software e `.exe` sem compressão. No `--demo` a memória caiu de ~75–80 MB para ~29–37 MB (números e como medir no [guia técnico](DESENVOLVIMENTO.md#consumo-de-memória)). Falta:
 
-- **Conferir com as contas reais:** o usuário tinha visto ~130 MB. Medir o widget real (coluna "Memória" do Gerenciador de Tarefas) com o `.exe` novo, sem anotar nem mostrar os limites.
-- **Medir depois de algumas horas aberto**, para saber se a memória sobe com o tempo (vazamento).
-- **Rede:** um `HttpClient` reaproveitado por provedor, e respostas lidas sem guardar o texto inteiro.
+- **Rede:** respostas lidas sem guardar o texto inteiro (o `HttpClient` já é um só para o app inteiro, no `App.axaml.cs`).
 - **Janela de configurações** liberada ao fechar, e nada de janelas escondidas guardadas.
-
-## Modo bandeja (decidido em outubro de 2026)
-
-Inspirado no [ai-usagebar](https://github.com/akitaonrails/ai-usagebar) do Akita. O usuário escolhe nas configurações um **Modo**: "Widget na área de trabalho" (como hoje), "Ícone na bandeja" ou os dois. O Core (`WidgetViewModel`, provedores, avisos) é o mesmo; muda só a interface.
-
-- **Ícone na área de notificação** com o `TrayIcon` do Avalonia. O ícone é um mini anel desenhado em 16 px com o maior uso entre as contas. A dica ao passar o mouse resume todas, por exemplo "Claude 42% · Codex 26%".
-- **Clique esquerdo** abre e fecha uma janelinha (popover). **Clique direito** abre o menu de hoje: Atualizar agora, Configurações e Sair.
-- **Posição:** o Avalonia não informa onde fica o ícone, então a janelinha abre perto do cursor (`GetCursorPos`), dentro da área livre do monitor, sem a barra de tarefas. É o mesmo jeito do ai-usagebar.
-- **Fecha sozinha** ao clicar fora, ao clicar de novo no ícone ou com Esc. Cuidado (visto no ai-usagebar): o Windows às vezes ativa a barra de tarefas sozinho quando o ícone é atualizado. Isso não pode fechar a janelinha.
-- **Visual (escolha deixada para o que ficar melhor):** a proposta é seguir o print que o usuário trouxe.
-  - No topo, uma aba por conta com o ponto colorido e o maior %.
-  - Embaixo, os limites da conta escolhida em **barras horizontais**: nome, %, "Renova em 1h 38m" e a linha "Atualizado há 2 min".
-  - As barras leem melhor que os anéis numa janela estreita e com texto. Os anéis continuam no widget e no ícone.
-  - Respeita os três temas. Confirmar na tela antes de fechar o visual.
-- **Atalho global (opcional)** para abrir e fechar a janelinha de qualquer lugar, com `RegisterHotKey`.
 
 ## Aproveitar os logins dos CLIs (decidido em outubro de 2026)
 
@@ -63,6 +46,8 @@ Hoje tudo está em português. Para traduzir para inglês e espanhol:
 - **Chaves de API (pagamento por uso):** mostrar o gasto do mês pelas APIs oficiais de uso e custo da Anthropic e da OpenAI. Pela mesma via, outros provedores que o ai-usagebar cobre por chave: Z.AI, OpenRouter e Kimi.
 
 Outras ideias vistas no ai-usagebar, ainda sem decisão:
+
+- **Atalho global** para abrir e fechar a janelinha da bandeja de qualquer lugar (`RegisterHotKey`), configurável.
 
 - **Ritmo:** um tracinho no anel ou na barra marca onde o uso estaria se fosse gasto por igual até renovar. Uma nota mostra "Acaba em 1d 9h" quando o ritmo estoura o limite antes da renovação, ou "Sobra ~40% ao renovar". É cálculo puro no Core, fácil de testar.
 - **Usado ou restante:** clicar no % troca entre "80% usado" e "20% restante".
