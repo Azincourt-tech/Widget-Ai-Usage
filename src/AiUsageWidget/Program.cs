@@ -32,5 +32,8 @@ internal static class Program
     public static AppBuilder BuildAvaloniaApp() =>
         AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // Desenho por software no Windows: o widget é pequeno e quase parado, e a GPU (ANGLE/Direct3D)
+            // custava ~20 MB de RAM e ~70 threads a mais, sem diferença no visual nem no desfoque do Vidro.
+            .With(new Win32PlatformOptions { RenderingMode = [Win32RenderingMode.Software] })
             .LogToTrace();
 }

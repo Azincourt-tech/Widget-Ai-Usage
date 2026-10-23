@@ -122,17 +122,32 @@ Em todo push na `main` (ou à mão, pela aba Actions):
 1. Lê a `<Version>` do `Directory.Build.props`. **Para** se a release `v<versão>` já existir.
 2. **Para** se o secret `ANTIGRAVITY_CLIENT_SECRET` não estiver cadastrado no environment `release` (Settings > Environments > release, com "Deployment branches" limitado à `main`, para nenhum workflow de outra branch conseguir usar o secret).
 3. Roda os testes.
-4. Gera o `.exe` único e autossuficiente (cerca de 58 MB, não precisa do .NET instalado):
+4. Gera o `.exe` único e autossuficiente (cerca de 140 MB, não precisa do .NET instalado):
 
    ```bash
-   dotnet publish src/AiUsageWidget -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o publish
+   dotnet publish src/AiUsageWidget -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -o publish
    ```
+
+   **Sem compressão de propósito:** com `EnableCompressionInSingleFile` o `.exe` cai para ~60 MB, mas as bibliotecas são descompactadas na memória a cada abertura e o widget gasta ~25 MB de RAM a mais (ver [Consumo de memória](#consumo-de-memória)).
 
 5. Cria a release com o arquivo `AiUsageWidget-v<versão>-win-x64.exe` e notas geradas pelo GitHub.
 
 **Para lançar uma versão:** suba a `<Version>` no `Directory.Build.props` (ex.: `0.2.0`) e envie para a `main`.
 
 Sem trimming, porque o Avalonia e o System.Text.Json usam reflexão. O `.exe` não é assinado, então o SmartScreen avisa na primeira execução.
+
+### Consumo de memória
+
+Medido em 22/10/2026 no `--demo` (tema Escuro, tamanho médio), com o `.exe` da release, uns 70 segundos depois de abrir. "Memória" é a coluna do Gerenciador de Tarefas (working set privado):
+
+| Versão | Memória | Threads |
+|---|---|---|
+| Antes: `.exe` comprimido, desenho na GPU | ~75–80 MB | 85 |
+| Agora: sem compressão, desenho por software | ~29–37 MB | 14 |
+
+- **Desenho por software** (`Win32RenderingMode.Software`, no `Program.cs`): a GPU (ANGLE/Direct3D e drivers) era a maior parte da memória e das threads. O visual é o mesmo nos três temas, o desfoque do Vidro continua (vem do Windows, não do desenho) e o uso de CPU parado até caiu. O modo `Wgl` foi pior (~150 MB).
+- **O heap do .NET é pequeno** (~3,6 MB). Opções do GC (`gcConcurrent`, `GCConserveMemory`, `GCHeapHardLimit`, `TieredPGO`) não mudaram nada.
+- **Como medir:** a coluna "Memória" do Gerenciador de Tarefas é o `WorkingSetPrivate` de `Win32_PerfFormattedData_PerfProc_Process`. O `WorkingSet64` do `Get-Process` é bem maior porque conta DLLs compartilhadas. Para o heap do .NET: `dotnet-counters` e `dotnet-gcdump`.
 
 ### Dependências e segurança
 

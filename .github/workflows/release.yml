@@ -67,7 +67,7 @@ jobs:
         run: >
           dotnet publish src/AiUsageWidget -c Release -r win-x64 --self-contained
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:EnableCompressionInSingleFile=true -p:DebugType=none -o publish
+          -p:DebugType=none -o publish
 
       - name: Publicar a release
         run: |
