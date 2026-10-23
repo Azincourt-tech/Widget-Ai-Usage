@@ -30,6 +30,29 @@ O usuário decidiu fazer **como o ai-usagebar**: usar o login que já existe no 
 - **O card diz a origem do login**, por exemplo "via Claude Code".
 - **Testes** com arquivos fictícios: leitura (`ParseXxx` estático), gravação de volta preservando os outros campos, não apagar o arquivo e voltar ao login próprio.
 
+## Atualização do app (pedido do usuário, outubro de 2026)
+
+O widget procura uma versão nova, baixa e se instala no lugar do `.exe` atual, sem o usuário ir ao GitHub.
+
+- **Procurar:** consultar a última release do repositório (`api.github.com/repos/Azincourt-tech/Widget-Ai-Usage/releases/latest`) e comparar a `tag_name` (`v<Version>`) com a versão do `.exe` (`<Version>` do `Directory.Build.props`).
+  - Fazer isso ao abrir e depois a cada algumas horas. A API sem login permite 60 consultas por hora, e o widget não deve se aproximar disso.
+  - Item "Procurar atualizações" no menu do clique direito (widget e bandeja).
+  - Sem rede ou erro da API: tentar de novo mais tarde, sem incomodar.
+- **Avisar:** quando houver versão nova, mostrar no widget e na janelinha da bandeja, por exemplo "Versão 0.3.0 disponível", com o botão "Atualizar agora". Opcionalmente, uma notificação do Windows.
+- **Opção nas configurações** "Atualizações": Automática (baixa e instala sozinha), Só avisar (padrão sugerido) ou Desligada.
+- **Baixar:** o arquivo `AiUsageWidget-v<versão>-win-x64.exe` da release, numa pasta temporária, com progresso.
+  - Conferir a integridade com um `.sha256` publicado junto. O `release.yml` hoje não gera esse arquivo e precisa passar a gerar.
+  - O `.sha256` confere que o arquivo chegou inteiro, mas não prova quem o publicou, já que o `.exe` não é assinado.
+- **Instalar no lugar do atual:** o Windows não deixa sobrescrever um `.exe` em uso, mas deixa **renomear**.
+  - Renomear o atual para `AiUsageWidget.exe.old`, mover o novo para o mesmo caminho e abrir o novo.
+  - O novo espera o antigo fechar (por causa do mutex de cópia única) e apaga o `.old` ao iniciar.
+  - Mesmo caminho e mesmo nome: "Iniciar com o Windows" e o registro das notificações continuam valendo.
+  - Se algo falhar no meio, desfazer a troca e manter a versão atual. Registrar no `ErrorLog`.
+- **Não atualizar:** no `--demo`, rodando pelo `dotnet run`/Debug, nem quando o `.exe` está numa pasta sem permissão de escrita. Nesses casos, só avisar com o link da release.
+- **SmartScreen:** o arquivo baixado pelo próprio widget não recebe a marca de "veio da internet", então o aviso do SmartScreen não deve aparecer. Conferir na prática.
+- **Privacidade:** a única consulta nova é ao GitHub, sem nenhum dado do usuário. Registrar no README e no DESENVOLVIMENTO.md.
+- **Testes:** a comparação de versões, a leitura da resposta da API (`ParseXxx` estático), a escolha do arquivo certo entre os da release, a conferência do `.sha256` e a troca de arquivos (com arquivos fictícios numa pasta temporária).
+
 ## Idiomas (inglês e espanhol)
 
 Hoje tudo está em português. Para traduzir para inglês e espanhol:
@@ -48,11 +71,9 @@ Hoje tudo está em português. Para traduzir para inglês e espanhol:
 Outras ideias vistas no ai-usagebar, ainda sem decisão:
 
 - **Atalho global** para abrir e fechar a janelinha da bandeja de qualquer lugar (`RegisterHotKey`), configurável.
-
 - **Ritmo:** um tracinho no anel ou na barra marca onde o uso estaria se fosse gasto por igual até renovar. Uma nota mostra "Acaba em 1d 9h" quando o ritmo estoura o limite antes da renovação, ou "Sobra ~40% ao renovar". É cálculo puro no Core, fácil de testar.
 - **Usado ou restante:** clicar no % troca entre "80% usado" e "20% restante".
 - **"Renova em 1h 38m" ou a hora exata**, como opção nas configurações.
-- **Aviso de nova versão** pelas releases do GitHub, conferindo o `.sha256`. Só avisa, sem instalar sozinho.
 - **Resets acumulados do Claude** ("Rate Limit Resets: 1 disponível"): conferir se a resposta de uso traz isso e mostrar no card.
 - **Antigravity com janela de 5 h:** segundo o ai-usagebar, cada grupo tem uma janela de 5 h e uma semanal. Na conta do usuário só veio a semanal; talvez dependa do plano.
 
