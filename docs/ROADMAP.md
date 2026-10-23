@@ -8,22 +8,12 @@ Só o que ainda está pendente. O que já está pronto fica descrito no [README]
 
 ## Consumo de memória
 
-Hoje o widget usa cerca de **130 MB de RAM** (visto pelo usuário em outubro de 2026). A meta é ver quanto dá para baixar sem perder visual nem recursos.
+Feito em outubro de 2026: desenho por software e `.exe` sem compressão. No `--demo` a memória caiu de ~75–80 MB para ~29–37 MB (números e como medir no [guia técnico](DESENVOLVIMENTO.md#consumo-de-memória)). Falta:
 
-- **Medir antes de mexer:**
-  - Comparar memória privada e working set no Gerenciador de Tarefas.
-  - Medir o `.exe` da release e o build Debug, que podem ser bem diferentes.
-  - Medir depois de algumas horas aberto, para saber se a memória sobe com o tempo (vazamento).
-  - Ver o que pesa com `dotnet-counters` (heap do GC) e `dotnet-gcdump` (o que ocupa o heap).
-- **Pontos a testar, um de cada vez, medindo cada um:**
-  - **Compressão do `.exe` único** (`EnableCompressionInSingleFile`): as bibliotecas comprimidas são descompactadas na memória ao abrir. Comparar com e sem compressão (o `.exe` fica maior, a RAM pode cair).
-  - **Configuração do GC:** `ConcurrentGarbageCollection=false`, `TieredCompilation`, e `GCConserveMemory` ou `GCHeapHardLimit`. São opções do .NET para apps pequenos que ficam abertos o dia todo.
-  - **Cache de imagem do Skia/Avalonia** (`SkiaOptions.MaxGpuResourceSizeBytes`) e o custo do desfoque do tema Vidro.
-  - **Animação dos anéis:** conferir que para quando termina e não redesenha à toa entre as leituras.
-  - **Rede:** um `HttpClient` reaproveitado por provedor, e respostas lidas sem guardar o texto inteiro.
-  - **Janela de configurações** liberada ao fechar, e nada de janelas escondidas guardadas.
-- **Sem trimming:** o Avalonia e o System.Text.Json usam reflexão (ver DESENVOLVIMENTO.md).
-- Registrar no DESENVOLVIMENTO.md quanto o widget consome depois das mudanças, e como medir.
+- **Conferir com as contas reais:** o usuário tinha visto ~130 MB. Medir o widget real (coluna "Memória" do Gerenciador de Tarefas) com o `.exe` novo, sem anotar nem mostrar os limites.
+- **Medir depois de algumas horas aberto**, para saber se a memória sobe com o tempo (vazamento).
+- **Rede:** um `HttpClient` reaproveitado por provedor, e respostas lidas sem guardar o texto inteiro.
+- **Janela de configurações** liberada ao fechar, e nada de janelas escondidas guardadas.
 
 ## Modo bandeja (decidido em outubro de 2026)
 
